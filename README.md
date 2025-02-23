@@ -57,8 +57,8 @@ Ensure you have the following installed:
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/shahsuvarli/family-tree.git
-   cd family-tree
+   git clone https://github.com/shahsuvarli/family-tree-mobile.git
+   cd family-tree-mobile
    ```
 
 2. **Install Dependencies**:
@@ -71,8 +71,8 @@ Ensure you have the following installed:
    Create a `.env` file in the root directory and include your Supabase credentials:
 
    ```env
-   REACT_NATIVE_SUPABASE_URL=<your_supabase_url>
-   REACT_NATIVE_SUPABASE_ANON_KEY=<your_anon_key>
+   EXPO_PUBLIC_SUPABASE_URL=<your_supabase_url>
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=<your_anon_key>
    ```
 
 4. **Start the App**:
