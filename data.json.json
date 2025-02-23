@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "created_at": "2024-11-03T01:27:22.974166+00:00",
+      "gender": 1,
+      "id": "7f3bcc7b-4061-47c9-a18e-ebf4ae98f7f0",
+      "initials": "ES",
+      "name": "Elvin",
+      "person_id": "4f9c4dd0-6067-4969-8538-68141e2d6a9c",
+      "relation_type": "is_sibling_of",
+      "relation_type_id": "dff3ce70-657a-48a9-8378-db6ec417b50c",
+      "surname": "Shahsuvarli"
+    }
+  ],
+  "id": "dff3ce70-657a-48a9-8378-db6ec417b50c",
+  "section": "is_sibling_of",
+  "title": "Sibling"
+}

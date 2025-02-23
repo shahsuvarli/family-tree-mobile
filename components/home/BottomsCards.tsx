@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet, Pressable } from "react-native";
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { results } from "@/assets/data/home-page-cards";
 import { useSession } from "@/app/ctx";
@@ -13,7 +13,7 @@ const BottomsCards = () => {
         <Pressable
           style={styles.gridCardContainer}
           onPress={() =>
-            router.push({ pathname: item.route, params: { id: session } })
+            router.push({ pathname: item.route as RelativePathString, params: { id: session } })
           }
           key={item.id}
         >

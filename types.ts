@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradientProps } from "expo-linear-gradient";
 import { RelativePathString } from "expo-router";
 import { ImageProps } from "react-native";
@@ -41,5 +42,11 @@ export interface Result {
   title: string;
   colors: LinearGradientProps["colors"];
   image: ImageProps["source"];
-  route: RelativePathString;
+  route: string;
+}
+
+export interface Option {
+  id: number;
+  icon?: keyof typeof Ionicons.glyphMap;
+  value: string;
 }

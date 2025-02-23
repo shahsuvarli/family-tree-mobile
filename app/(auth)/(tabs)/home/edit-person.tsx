@@ -23,7 +23,7 @@ import {
 } from "@/assets/data/new-person.json";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useLocalSearchParams } from "expo-router";
-import { PersonType } from "@/types";
+import { Option } from "@/types";
 
 interface ValuesType {
   name: string;
@@ -266,7 +266,7 @@ export default function Page() {
                 <View style={styles.optionsContainer}>
                   {genderOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}
@@ -286,12 +286,13 @@ export default function Page() {
                 <View style={styles.optionsContainer}>
                   {lifeOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}
                     />
-                  ))}
+                  )
+                  )}
                 </View>
               </View>
             )}
@@ -306,7 +307,7 @@ export default function Page() {
                 <View style={styles.optionsContainer}>
                   {maritalStatusOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}

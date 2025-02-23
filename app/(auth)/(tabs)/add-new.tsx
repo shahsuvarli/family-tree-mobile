@@ -24,6 +24,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
+import { Option } from "@/types";
 
 export default function HomeScreen() {
   const {
@@ -245,7 +246,7 @@ export default function HomeScreen() {
                 <View style={styles.optionsContainer}>
                   {genderOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}
@@ -265,7 +266,7 @@ export default function HomeScreen() {
                 <View style={styles.optionsContainer}>
                   {lifeOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}
@@ -285,7 +286,7 @@ export default function HomeScreen() {
                 <View style={styles.optionsContainer}>
                   {maritalStatusOptions.map((option) => (
                     <AddNewSelection
-                      option={option}
+                      option={option as Option}
                       value={value}
                       onChange={onChange}
                       key={option.id}
