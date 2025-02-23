@@ -1,11 +1,13 @@
 import { Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { FC } from "react";
+import { Option } from "../types";
 
-interface Option {
-  id: number;
-  icon?: keyof typeof Ionicons.glyphMap;
-  value: string;
-}
+// interface Option {
+//   id: number;
+//   icon?: keyof typeof Ionicons.glyphMap;
+//   value: string;
+// }
 
 interface Props {
   option: Option;
@@ -20,7 +22,7 @@ interface AddNewSelectionProps {
 }
 
 const AddNewSelection = ({ option, value, onChange }: AddNewSelectionProps) => {
-  const IconComponent: React.FC<Props> = ({ option, size, color }) => {
+  const IconComponent: FC<Props> = ({ option, size, color }) => {
     return (
       <Ionicons
         name={option.icon}

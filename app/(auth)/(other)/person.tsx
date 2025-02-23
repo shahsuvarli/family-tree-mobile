@@ -13,10 +13,10 @@ import { supabase } from "@/db";
 import { FamilyType, PersonType, SectionType } from "@/types";
 
 export default function Person() {
-  const { id: person_id } = useLocalSearchParams();
+  const { id: person_id } = useLocalSearchParams() as { id: string };
   const navigation = useNavigation();
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  const [family, setFamily] = useState<FamilyType[]>();
+  const [family, setFamily] = useState<SectionType[]>();
   const [section, setSection] = useState<SectionType>();
   const { session } = useSession();
   const [open, setOpen] = useState<boolean>(false);
@@ -128,7 +128,7 @@ export default function Person() {
             return null;
           }}
           stickySectionHeadersEnabled={false}
-          renderSectionHeader={({ section }: { section: FamilyType }) => {
+          renderSectionHeader={({ section }: { section: SectionType }) => {
             const count = section?.data.length;
             return (
               <View style={styles.sectionHeader}>
@@ -170,7 +170,7 @@ export default function Person() {
         >
           <BottomSheetView style={styles.contentContainer}>
             <BottomPeople
-              section={section}
+              section={section as SectionType}
               person_id={person_id}
               handleClosePress={handleClosePress}
             />
