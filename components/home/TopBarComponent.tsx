@@ -1,13 +1,12 @@
-import { Text, Pressable, StyleSheet } from "react-native";
+import { Text, Pressable, StyleSheet, View, Image } from "react-native";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
-// import { router } from "expo-router";
 
 const TopBarComponent = () => {
   const [greeting, setGreeting] = useState("");
-  const router =useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -22,8 +21,17 @@ const TopBarComponent = () => {
   }, []);
   return (
     <>
-      <Text style={styles.greetingText}>Hi, Elvin!</Text>
-      <Text style={styles.morningText}>{greeting}</Text>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
+        <View style={{ flexDirection: "column", gap: 5 }}>
+          <Text style={styles.greetingText}>Hi, Elvin!</Text>
+          <Text style={styles.morningText}>{greeting}</Text>
+        </View>
+        <Image
+          source={require("@/assets/images/avatar.png")}
+          style={{ width: 65, height: 65, borderRadius: 100, opacity: 0.8, borderWidth: 1, borderColor: Colors.darkerGrey }}
+        />
+      </View>
+
       <Pressable
         style={styles.searchButton}
         onPress={() => router.push("/(auth)/(other)/search")}

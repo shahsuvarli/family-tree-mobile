@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     paddingHorizontal: 15,
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f0f0",
     paddingTop: 100,
   },
   horizontalScrollView: {

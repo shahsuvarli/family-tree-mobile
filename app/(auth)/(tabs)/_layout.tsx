@@ -1,17 +1,19 @@
-import { Tabs } from "expo-router";
+import { MyTabBar } from "@/components/tab";
 import { Colors } from "@/constants/Colors";
 import { Feather, Ionicons, Octicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   return (
     <Tabs
-      initialRouteName="home"
-      screenOptions={{
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          borderBottomColor: "red",
-        },
-      }}
+      tabBar={(props) => <MyTabBar {...props} />}
+    // initialRouteName="home"
+    // screenOptions={{
+    //   tabBarShowLabel: false,
+    //   tabBarStyle: {
+    //     borderBottomColor: "red",
+    //   },
+    // }}
     >
       <Tabs.Screen
         name="index"
@@ -22,7 +24,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: "",
+          title: "Home",
           headerShown: false,
           tabBarIcon: () => (
             <Octicons name="home" size={30} color={Colors.button} />
@@ -32,17 +34,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-new"
         options={{
-          title: "New person",
-          headerTitle: "New person",
-          tabBarIcon: () => (
-            <Feather name="plus-square" color={Colors.button} size={30} />
-          ),
+          title: "Create",
+          // headerTitle: "New person",
+          // tabBarIcon: () => (
+          //   <Feather name="plus-square" color={Colors.button} size={30} />
+          // ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          headerTitle: "",
           headerShown: false,
           tabBarIcon: () => (
             <Ionicons
@@ -57,8 +58,11 @@ export default function TabLayout() {
           tabBarLabelStyle: {
             color: Colors.button,
           },
+          title: "Profile",
         }}
       />
-    </Tabs>
+    </Tabs >
+
   );
 }
+
