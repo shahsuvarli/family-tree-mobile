@@ -1,20 +1,14 @@
-import { Pressable } from "react-native";
+import { Pressable, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
-import { RouteProp } from "@react-navigation/native";
-
-type FavoriteScreenParams = {
-  id: string;
-};
-
-// Specify the route prop type for the "favorite" screen
-type FavoriteScreenRouteProp = RouteProp<
-  { favorite: FavoriteScreenParams },
-  "favorite"
->;
+import { usePersonStore } from "@/utils/store";
 
 export default function OtherLayout() {
+  const {
+    person,
+    handleFavorite,
+  } = usePersonStore();
   return (
     <Stack>
       <Stack.Screen
@@ -29,6 +23,42 @@ export default function OtherLayout() {
         options={() => ({
           headerShown: true,
           headerBackTitleVisible: false,
+          title: `${person.name}'s family`,
+          headerRight: () => {
+            return (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 15,
+                }}
+              >
+                <Pressable onPress={handleFavorite}>
+                  <AntDesign
+                    name={person.is_favorite ? "star" : "staro"}
+                    size={30}
+                    color={Colors.button}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(auth)/(tabs)/home/edit-person",
+                      params: { person_id: person.id },
+                    })
+                  }
+                >
+                  <FontAwesome
+                    name="pencil-square-o"
+                    size={27}
+                    color={Colors.button}
+                  />
+                </Pressable>
+              </View>
+            );
+          }
+
         })}
       />
       <Stack.Screen
