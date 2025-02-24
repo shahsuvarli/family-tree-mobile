@@ -2,13 +2,16 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from '@react-navigation/elements';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+
+type IconKey = 'home' | 'add-new' | 'profile'
+type IconName = 'home' | 'plus' | 'person'
 
 export function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-    const icons = {
-        home: (props) => <Octicons name="home" size={30} color={Colors.button} {...props} />,
-        'add-new': (props) => <Octicons name="plus" size={30} color={Colors.button} {...props} />,
-        profile: (props) => <Octicons name="person" size={30} color={Colors.button} {...props} />,
+
+    const icons: Record<IconKey, IconName> = {
+        home: 'home',
+        'add-new': 'plus',
+        profile: 'person',
     }
 
     const primaryColor = '#0891b2'
@@ -48,6 +51,8 @@ export function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) 
                     });
                 };
 
+                const iconName = icons[route.name as IconKey]
+
                 return (
                     <TouchableOpacity
                         accessibilityState={isFocused ? { selected: true } : {}}
@@ -58,12 +63,10 @@ export function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) 
                         style={styles.tabbarItem}
                         key={route.name}
                     >
-                        {icons[route.name]({
-                            color: isFocused ? primaryColor : greyColor,
-                            fontSize: 11,
-                        })}
+
+                        <Octicons name={iconName} size={30} color={isFocused ? primaryColor : greyColor} />
                         <Text style={{ color: isFocused ? primaryColor : greyColor, fontSize: 16 }}>
-                            {label}
+                            {label as string}
                         </Text>
                     </TouchableOpacity>
                 );
