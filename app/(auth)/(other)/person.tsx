@@ -1,21 +1,21 @@
 import { View, SectionList, Text, Pressable, StyleSheet } from "react-native";
 import PersonLine from "@/components/PersonLine";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Colors } from "@/constants/Colors";
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useSession } from "@/app/ctx";
 import useFamily from "@/hooks/useFamily";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import BottomPeople from "@/components/BottomPeople";
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
 import { supabase } from "@/db";
-import { FamilyType, PersonType, SectionType } from "@/types";
+import { PersonType, SectionType } from "@/types";
+import { usePersonStore } from "@/utils/store";
 
 export default function Person() {
+  const { setPerson } = usePersonStore();
   const { id: person_id } = useLocalSearchParams() as { id: string };
-  const navigation = useNavigation();
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [family, setFamily] = useState<SectionType[]>();
   const [section, setSection] = useState<SectionType>();
   const { session } = useSession();
@@ -28,59 +28,11 @@ export default function Person() {
       .eq("id", person_id)
       .single();
 
-    if (data || !error) {
-      setIsFavorite(() => data.is_favorite);
-      navigation.setOptions({
-        title: `${data.name}'s family`,
-        headerRight: () => {
-          return (
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 15,
-              }}
-            >
-              <Pressable onPress={handleFavorite}>
-                <AntDesign
-                  name={isFavorite ? "star" : "staro"}
-                  size={30}
-                  color={Colors.button}
-                />
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/(auth)/(tabs)/home/edit-person",
-                    params: { person_id },
-                  })
-                }
-              >
-                <FontAwesome
-                  name="pencil-square-o"
-                  size={27}
-                  color={Colors.button}
-                />
-              </Pressable>
-            </View>
-          );
-        },
-      });
+    if (!error) {
+      const { id, name, is_favorite } = data;
+      setPerson({ id, name, is_favorite });
     }
-  };
-
-  const handleFavorite = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("people")
-      .update({ is_favorite: !isFavorite })
-      .eq("id", person_id)
-      .select("id, is_favorite")
-      .single();
-    if (data || !error) {
-      getUserData();
-    }
-  }, [person_id]);
+  }
 
   useEffect(() => {
     async function fetchProfile() {
