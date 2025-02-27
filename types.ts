@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradientProps } from "expo-linear-gradient";
-import { RelativePathString } from "expo-router";
 import { ImageProps } from "react-native";
 
 export interface PersonType {
@@ -28,9 +27,9 @@ export interface FamilyType {
 
 export interface SectionType {
   data: PersonType[];
-  id: string;
-  section: string;
-  title: string;
+  relation_id: string;
+  relation_tag: string;
+  relation_name: string;
 }
 
 export type ColorsType = {
