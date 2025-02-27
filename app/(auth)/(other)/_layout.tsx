@@ -102,6 +102,14 @@ export default function OtherLayout() {
           headerShown: true,
         }}
       />
+      <Stack.Screen
+        name="add-relative"
+        options={{
+          title: "Add relative",
+          headerShown: true,
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }

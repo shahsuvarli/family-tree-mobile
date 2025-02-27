@@ -1,14 +1,12 @@
 import { View, SectionList, Text, Pressable, StyleSheet } from "react-native";
 import PersonLine from "@/components/PersonLine";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useSession } from "@/app/ctx";
 import useFamily from "@/hooks/useFamily";
-import { useLocalSearchParams } from "expo-router";
-import BottomPeople from "@/components/BottomPeople";
-import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
+import { router, useLocalSearchParams } from "expo-router";
+import Animated, { useSharedValue } from "react-native-reanimated";
 import { supabase } from "@/db";
 import { PersonType, SectionType } from "@/types";
 import { usePersonStore } from "@/utils/store";
@@ -17,9 +15,7 @@ export default function Person() {
   const { setPerson } = usePersonStore();
   const { id: person_id } = useLocalSearchParams() as { id: string };
   const [family, setFamily] = useState<SectionType[]>();
-  const [section, setSection] = useState<SectionType>();
   const { session } = useSession();
-  const [open, setOpen] = useState<boolean>(false);
 
   const getUserData = async () => {
     const { data, error } = await supabase
@@ -41,7 +37,7 @@ export default function Person() {
     }
 
     fetchProfile();
-  }, [open]);
+  }, []);
 
   useEffect(() => {
     getUserData();
@@ -49,23 +45,12 @@ export default function Person() {
 
   const opacityShareValue = useSharedValue(1);
 
-  const bottomSheetModalRef = useRef<BottomSheet>(null);
-
-  function handlePlusPress(section: SectionType): void {
-    setOpen(true);
-    opacityShareValue.value = withSpring(0.5);
-    setSection(section);
-    bottomSheetModalRef.current?.expand();
+  function handlePlusPress(person_id: string, relation_id: string, relation_name: string): void {
+    router.push({
+      pathname: "/(auth)/(other)/add-relative",
+      params: { person_id, relation_id, relation_name },
+    });
   }
-
-  const handleClose = () => {
-    opacityShareValue.value = withSpring(1);
-    setOpen(false);
-  };
-
-  const handleClosePress = () => {
-    bottomSheetModalRef.current?.close();
-  };
 
   if (!family) {
     return null;
@@ -80,24 +65,28 @@ export default function Person() {
             return null;
           }}
           stickySectionHeadersEnabled={false}
-          renderSectionHeader={({ section }: { section: SectionType }) => {
-            const count = section?.data.length;
+          renderSectionHeader={({ section: {
+            relation_name,
+            data,
+            relation_id,
+          } }: { section: SectionType }) => {
+            const count = data.length;
             return (
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionHeaderTitle}>
-                  <Text style={styles.sectionHeaderText}>{section?.title}</Text>
-                  <Pressable onPress={() => handlePlusPress(section)}>
+                  <Text style={styles.sectionHeaderText}>{relation_name}</Text>
+                  <Pressable onPress={() => handlePlusPress(person_id, relation_id, relation_name)}>
                     <Ionicons name="add" size={27} color={Colors.darkGrey} />
                   </Pressable>
                 </View>
                 <View>
                   {count ? (
-                    section.data.map((item: PersonType) => {
+                    data.map((item: PersonType) => {
                       return <PersonLine item={item} key={item.id} />;
                     })
                   ) : (
                     <Text style={styles.noItemsText}>
-                      &nbsp; no {section?.title.toLowerCase()} found
+                      &nbsp; no {relation_name.toLowerCase()} found
                     </Text>
                   )}
                 </View>
@@ -108,27 +97,6 @@ export default function Person() {
           keyExtractor={(item) => item.id}
         />
       </Animated.View>
-
-      {open && (
-        <BottomSheet
-          ref={bottomSheetModalRef}
-          snapPoints={["90%"]}
-          style={styles.bottomSheetModalStyle}
-          enablePanDownToClose
-          onClose={handleClose}
-          backgroundStyle={styles.backdrop}
-          handleStyle={{ backgroundColor: "transparent", opacity: 0.5 }}
-          handleIndicatorStyle={{ backgroundColor: Colors.button }}
-        >
-          <BottomSheetView style={styles.contentContainer}>
-            <BottomPeople
-              section={section as SectionType}
-              person_id={person_id}
-              handleClosePress={handleClosePress}
-            />
-          </BottomSheetView>
-        </BottomSheet>
-      )}
     </View>
   );
 }
@@ -158,22 +126,6 @@ const styles = StyleSheet.create({
   noItemsText: {
     color: Colors.darkGrey,
     fontSize: 15,
-  },
-  bottomSheetModalStyle: {
-    backgroundColor: "transparent",
-  },
-  backdrop: {
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.35,
-    shadowRadius: 10.84,
-  },
-  contentContainer: {
-    alignItems: "center",
-    height: "100%",
-    overflow: "hidden",
+    fontStyle: "italic",
   },
 });

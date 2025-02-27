@@ -107,6 +107,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.mainContainer}>
+        <View>
+          <Text style={styles.inputText}>Add new person
+          </Text>
+        </View>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <Controller
             control={control}
@@ -334,17 +338,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   mainContainer: {
-    backgroundColor: "#fff",
     borderRadius: 10,
     margin: 10,
     flex: 1,
     flexDirection: "column",
     gap: 20,
-    paddingBottom: 27,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: Colors.button,
-    padding: 10,
+    // paddingBottom: 27,
+    // padding: 10,
   },
   scrollViewContainer: {
     backgroundColor: "#fff",
@@ -380,6 +380,7 @@ const styles = StyleSheet.create({
     borderStyle: "solid",
     alignItems: "center",
     paddingHorizontal: 10,
+    backgroundColor: "#f8f9fa",
   },
   iconColor: {
     color: "#0000005a",
