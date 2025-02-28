@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/db";
 import PersonLine from "@/components/PersonLine";
 import { PersonType } from "@/types";
+import { router } from "expo-router";
 
 const Page = () => {
   const [data, setData] = useState<PersonType[]>([]);
@@ -40,6 +41,13 @@ const Page = () => {
     fetchData();
   }, []);
 
+  function handlePerson(item: any) {
+    router.replace({
+      pathname: "/(auth)/(other)/person",
+      params: { id: item.id, name: item.name },
+    });
+  }
+
   return (
     <View style={styles.container}>
       {loading && !refreshing ? (
@@ -53,7 +61,7 @@ const Page = () => {
           data={data}
           contentContainerStyle={{ padding: 20 }}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <PersonLine item={item} />}
+          renderItem={({ item }) => <PersonLine item={item} handlePerson={handlePerson} icon="chevron-forward" />}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }

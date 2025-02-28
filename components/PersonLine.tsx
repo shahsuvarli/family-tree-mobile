@@ -1,26 +1,41 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { supabase } from "@/db";
 import { PersonType } from "@/types";
+import { usePersonStore } from "@/utils/store";
 
-const PersonLine = ({ item }: { item: PersonType }) => {
+interface Props {
+  item: PersonType;
+  handlePerson: any;
+  icon: keyof typeof Ionicons.glyphMap;
+  relation_id?: string;
+}
+
+const PersonLine = ({ item, handlePerson, icon, relation_id }: Props) => {
   const created_at = new Date(item.created_at).toLocaleDateString();
+  const { familyData, setFamilyData } = usePersonStore();
 
-  const handleLongPress = async () => {
-    await supabase.from("relation").delete().eq("id", item.id);
+  const handleLongPress = async (item: any) => {
+    const { error } = await supabase.from("relation").delete().eq("id", item.id);
+    if (!error) {
+      const newFamilyData = familyData.map((data: any) => {
+        if (data.relation_id === relation_id) {
+          const newData = data.data.filter((person: any) => person.id !== item.id)
+          return { ...data, data: newData }
+        }
+        else {
+          return data
+        }
+      })
+      setFamilyData(newFamilyData)
+    }
   };
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => {
-        router.replace({
-          pathname: "/(auth)/(other)/person",
-          params: { id: item.person_id || item.id, name: item.name },
-        });
-      }}
-      onLongPress={handleLongPress}
+      onPress={handlePerson.bind(null, item)}
+      onLongPress={handleLongPress.bind(null, item)}
     >
       <View style={styles.leftContainer}>
         <View
@@ -43,7 +58,7 @@ const PersonLine = ({ item }: { item: PersonType }) => {
           <Text style={styles.dateText}>{created_at}</Text>
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={24} color={Colors.darkGrey} />
+      <Ionicons name={icon} size={30} color={Colors.darkGrey} />
     </TouchableOpacity>
   );
 };

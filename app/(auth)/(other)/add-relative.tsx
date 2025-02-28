@@ -1,10 +1,11 @@
+import { useSession } from '@/app/ctx'
 import PersonLine from '@/components/PersonLine'
 import { Colors } from '@/constants/Colors'
 import { supabase } from '@/db'
 import { PersonType } from '@/types'
 import { usePersonStore } from '@/utils/store'
 import { AntDesign } from '@expo/vector-icons'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, FlatList, TextInput } from 'react-native'
 import Toast from 'react-native-toast-message'
@@ -15,14 +16,13 @@ const AddRelative = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [search, setSearch] = useState("");
 
+    const { goBack } = useNavigation()
 
     const fetchData = async (text: string = "") => {
         setLoading(true);
-        // setError(null);
         const { data, error } = await supabase
             .from("people")
             .select("*")
-            .neq("user_id", person_id)
             .order("created_at", { ascending: false })
             .or(`name.ilike.%${text}%,surname.ilike.%${text}%`);
 
@@ -36,7 +36,7 @@ const AddRelative = () => {
             });
             setError("Failed to fetch data.");
         } else {
-            setData(data || [])
+            setData(data)
         }
         setLoading(false);
     };
@@ -51,12 +51,47 @@ const AddRelative = () => {
         };
     }, [search]);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const { person_id, relation_name, relation_id } = useLocalSearchParams() as { person_id: string, relation_id: string, relation_name: string }
+    const { person: { name }, setFamilyData, familyData } = usePersonStore()
+    const { session } = useSession()
 
-    const { person_id, relation_id, relation_name } = useLocalSearchParams() as { person_id: string, relation_id: string, relation_name: string }
-    const { person: { name } } = usePersonStore()
+    const handleAddPerson = async (item: any) => {
+        const { error } = await supabase.from("relation").insert([
+            {
+                user_id: session,
+                p1_id: person_id,
+                relation_type_id: relation_id,
+                p2_id: item.id,
+                native: true,
+            },
+        ]);
+        if (error) {
+            Toast.show({
+                type: "error",
+                text1: "Error",
+                text2: error.message,
+                position: "bottom",
+                bottomOffset: 50,
+            });
+        } else {
+            const newFamilyData = familyData.map((data: any) => {
+                if (data.relation_id === relation_id) {
+                    data.data.push(item)
+                }
+                return data
+            })
+            setFamilyData(newFamilyData)
+            goBack()
+            Toast.show({
+                type: "success",
+                text1: "Person added to family",
+                text2: "Person added to family",
+                position: "bottom",
+                bottomOffset: 50,
+            });
+        }
+    };
+
     return (
         <View style={{ padding: 20 }}>
             <Text style={{ fontSize: 20, color: "gray" }}>Select {name}'s {relation_name.toLowerCase()} from the list</Text>
@@ -83,7 +118,7 @@ const AddRelative = () => {
                         data={data}
                         contentContainerStyle={{ paddingVertical: 20 }}
                         keyExtractor={(item) => item.id.toString()}
-                        renderItem={({ item }) => <PersonLine item={item} />}
+                        renderItem={({ item }) => <PersonLine item={item} handlePerson={handleAddPerson} icon={'add'} />}
                     />
                 )}
             </View>
