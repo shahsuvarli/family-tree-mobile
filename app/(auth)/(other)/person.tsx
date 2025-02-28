@@ -12,9 +12,8 @@ import { PersonType, SectionType } from "@/types";
 import { usePersonStore } from "@/utils/store";
 
 export default function Person() {
-  const { setPerson } = usePersonStore();
+  const { setPerson, setFamilyData, familyData } = usePersonStore();
   const { id: person_id } = useLocalSearchParams() as { id: string };
-  const [family, setFamily] = useState<SectionType[]>();
   const { session } = useSession();
 
   const getUserData = async () => {
@@ -23,6 +22,7 @@ export default function Person() {
       .select("id, name, is_favorite")
       .eq("id", person_id)
       .single();
+
 
     if (!error) {
       const { id, name, is_favorite } = data;
@@ -33,7 +33,7 @@ export default function Person() {
   useEffect(() => {
     async function fetchProfile() {
       const value = await useFamily(session, person_id);
-      setFamily(value);
+      setFamilyData(value);
     }
 
     fetchProfile();
@@ -52,7 +52,14 @@ export default function Person() {
     });
   }
 
-  if (!family) {
+  function handlePerson(item: any) {
+    router.replace({
+      pathname: "/(auth)/(other)/person",
+      params: { id: item.person_id, name: item.name },
+    });
+  }
+
+  if (!familyData) {
     return null;
   }
 
@@ -60,7 +67,7 @@ export default function Person() {
     <View style={styles.container}>
       <Animated.View style={[styles.content, { opacity: opacityShareValue }]}>
         <SectionList
-          sections={family}
+          sections={familyData}
           renderItem={() => {
             return null;
           }}
@@ -82,7 +89,7 @@ export default function Person() {
                 <View>
                   {count ? (
                     data.map((item: PersonType) => {
-                      return <PersonLine item={item} key={item.id} />;
+                      return <PersonLine item={item} key={item.id} handlePerson={handlePerson} icon="chevron-forward" />;
                     })
                   ) : (
                     <Text style={styles.noItemsText}>

@@ -11,6 +11,8 @@ interface PersonHeaderContext {
     person: Person;
     setPerson: (person: Person) => void;
     handleFavorite: () => void;
+    familyData: any;
+    setFamilyData: (family: any) => void;
 }
 
 export const usePersonStore = create<PersonHeaderContext>((set, get) => ({
@@ -19,6 +21,10 @@ export const usePersonStore = create<PersonHeaderContext>((set, get) => ({
         id: "",
         name: "",
         is_favorite: false,
+    },
+    familyData: [],
+    setFamilyData: (familyData: any) => {
+        set({ familyData });
     },
     setPerson: (person: Person) => {
         set({ person });

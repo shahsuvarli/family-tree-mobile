@@ -1,11 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { supabase } from "@/db";
 import { PersonType } from "@/types";
 
-const PersonLine = ({ item }: { item: PersonType }) => {
+interface Props {
+  item: PersonType;
+  handlePerson: any;
+  icon: keyof typeof Ionicons.glyphMap;
+}
+
+const PersonLine = ({ item, handlePerson, icon }: Props) => {
   const created_at = new Date(item.created_at).toLocaleDateString();
 
   const handleLongPress = async () => {
@@ -15,10 +20,7 @@ const PersonLine = ({ item }: { item: PersonType }) => {
     <TouchableOpacity
       style={styles.container}
       onPress={() => {
-        router.replace({
-          pathname: "/(auth)/(other)/person",
-          params: { id: item.person_id || item.id, name: item.name },
-        });
+        handlePerson(item);
       }}
       onLongPress={handleLongPress}
     >
@@ -43,7 +45,7 @@ const PersonLine = ({ item }: { item: PersonType }) => {
           <Text style={styles.dateText}>{created_at}</Text>
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={24} color={Colors.darkGrey} />
+      <Ionicons name={icon} size={30} color={Colors.darkGrey} />
     </TouchableOpacity>
   );
 };
