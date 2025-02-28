@@ -3,26 +3,39 @@ import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/db";
 import { PersonType } from "@/types";
+import { usePersonStore } from "@/utils/store";
 
 interface Props {
   item: PersonType;
   handlePerson: any;
   icon: keyof typeof Ionicons.glyphMap;
+  relation_id?: string;
 }
 
-const PersonLine = ({ item, handlePerson, icon }: Props) => {
+const PersonLine = ({ item, handlePerson, icon, relation_id }: Props) => {
   const created_at = new Date(item.created_at).toLocaleDateString();
+  const { familyData, setFamilyData } = usePersonStore();
 
-  const handleLongPress = async () => {
-    await supabase.from("relation").delete().eq("id", item.id);
+  const handleLongPress = async (item: any) => {
+    const { error } = await supabase.from("relation").delete().eq("id", item.id);
+    if (!error) {
+      const newFamilyData = familyData.map((data: any) => {
+        if (data.relation_id === relation_id) {
+          const newData = data.data.filter((person: any) => person.id !== item.id)
+          return { ...data, data: newData }
+        }
+        else {
+          return data
+        }
+      })
+      setFamilyData(newFamilyData)
+    }
   };
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => {
-        handlePerson(item);
-      }}
-      onLongPress={handleLongPress}
+      onPress={handlePerson.bind(null, item)}
+      onLongPress={handleLongPress.bind(null, item)}
     >
       <View style={styles.leftContainer}>
         <View

@@ -89,7 +89,7 @@ export default function Person() {
                 <View>
                   {count ? (
                     data.map((item: PersonType) => {
-                      return <PersonLine item={item} key={item.id} handlePerson={handlePerson} icon="chevron-forward" />;
+                      return <PersonLine item={item} key={item.id} handlePerson={handlePerson} icon="chevron-forward" relation_id={relation_id} />;
                     })
                   ) : (
                     <Text style={styles.noItemsText}>
