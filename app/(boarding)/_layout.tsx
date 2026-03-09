@@ -1,17 +1,29 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router, Stack } from "expo-router";
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { useSession } from "../ctx";
+import { Colors } from "@/theme/colors";
 
 const AuthLayout = () => {
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    return <ActivityIndicator />;
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" color={Colors.button} />
+      </View>
+    );
   }
 
   if (session) {
-    return <Redirect href="../(auth)/(tabs)/home" />;
+    return <Redirect href="/(auth)/(tabs)/home" />;
   }
 
   return (
@@ -60,7 +72,12 @@ const AuthLayout = () => {
           ),
         }}
       />
-      <Stack.Screen name="forgot-password" />
+      <Stack.Screen
+        name="forgot-password"
+        options={{
+          headerTitle: "Reset password",
+        }}
+      />
     </Stack>
   );
 };

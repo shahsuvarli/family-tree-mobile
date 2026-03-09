@@ -1,255 +1,167 @@
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Image,
-  StyleSheet,
-} from "react-native";
+import AuthScaffold from "@/components/auth/AuthScaffold";
+import FormButton from "@/components/forms/FormButton";
+import FormTextField from "@/components/forms/FormTextField";
+import { Colors } from "@/theme/colors";
+import { supabase } from "@/lib/supabase/client";
 import { Link, router } from "expo-router";
-import { Colors } from "@/constants/Colors";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSession } from "../ctx";
-import { supabase } from "@/db";
 
-interface FormDataType {
+interface SignInFormValues {
   email: string;
   password: string;
 }
 
-const Page = () => {
+export default function SignInScreen() {
   const { signIn } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
-    formState: { errors },
     handleSubmit,
-  } = useForm({
+    formState: { errors },
+  } = useForm<SignInFormValues>({
     defaultValues: {
-      email: "shahsuvarli.elvin@gmail.com",
-      password: "Elvin351",
+      email: "",
+      password: "",
     },
   });
 
-  const onSubmit = async ({ email, password }: FormDataType) => {
+  const onSubmit = async ({ email, password }: SignInFormValues) => {
+    setIsSubmitting(true);
+
     const {
       data: { user },
       error,
     } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     });
+
+    setIsSubmitting(false);
 
     if (error) {
       Toast.show({
         type: "error",
-        text1: "Invalid credentials",
-        text2: "Please check your email and password",
+        text1: "Sign in failed",
+        text2: error.message,
         position: "bottom",
       });
       return;
     }
 
-    const userId: any = user?.id;
-    await AsyncStorage.setItem("family-tree", userId as string);
-
-    signIn(userId);
+    if (user?.id) {
+      signIn(user.id);
+    }
 
     Toast.show({
       type: "success",
-      text1: "Signed in successfully",
-      text2: "Welcome back",
+      text1: "Signed in",
+      text2: "Your family tree is ready.",
       position: "bottom",
     });
+
+    router.replace("/(auth)/(tabs)/home");
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.subtitle}>Back!</Text>
-      </View>
-      <View>
-        <View style={{ flexDirection: "column", gap: 20 }}>
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail" size={24} color={Colors.button} />
-                <TextInput
-                  placeholder="Email"
-                  style={styles.inputField}
-                  onChangeText={onChange}
-                  value={value}
-                  autoCapitalize="none"
-                />
-              </View>
-            )}
-            name="email"
-            rules={{ required: "Email is required" }}
-          />
-
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed" size={24} color={Colors.button} />
-                <TextInput
-                  placeholder="Password"
-                  style={styles.inputField}
-                  value={value}
-                  onChangeText={onChange}
-                  autoCapitalize="none"
-                  secureTextEntry={true}
-                  maxLength={20}
-                />
-              </View>
-            )}
-            name="password"
-            rules={{ required: true }}
-          />
-        </View>
-        <Link href="/forgot-password" style={styles.forgotPasswordLink}>
-          Forgot password?
-        </Link>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <Pressable style={styles.signInButton} onPress={handleSubmit(onSubmit)}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
-          <MaterialCommunityIcons
-            name="arrow-right"
-            size={20}
-            color="#fff"
-            style={{ marginLeft: 5 }}
-          />
-        </Pressable>
-        <View style={styles.signUpLinkContainer}>
-          <Text style={styles.signUpLinkText}>Don't have an accoun?</Text>
-          <Link href="../sign-up">
-            <Text style={styles.signUpLink}>Sign up</Text>
+    <AuthScaffold
+      eyebrow="Welcome back"
+      title="Sign in"
+      subtitle="Pick up where you left off."
+      description="Use the email and password connected to your Family Tree account."
+      footer={
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Need an account?</Text>
+          <Link href="/(boarding)/sign-up" style={styles.footerLink}>
+            Sign up
           </Link>
         </View>
-      </View>
-
-      <Text style={styles.orContinueText}>or continue with</Text>
-      <View style={styles.buttonContainer}>
-        <Pressable
-          style={styles.googleSignInButton}
-          onPress={() => router.push("../(auth)/(tabs)/home")}
-        >
-          <Image
-            source={require("@/assets/images/google.png")}
-            style={{ height: 30, width: 30 }}
+      }
+    >
+      <Controller
+        control={control}
+        name="email"
+        rules={{
+          required: "Email is required",
+          pattern: {
+            value: /\S+@\S+\.\S+/,
+            message: "Enter a valid email address",
+          },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Email"
+            icon="mail-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="you@example.com"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            errorText={errors.email?.message}
           />
-          <Text style={styles.googleSignInText}>Google</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-};
+        )}
+      />
 
-export default Page;
+      <Controller
+        control={control}
+        name="password"
+        rules={{
+          required: "Password is required",
+          minLength: {
+            value: 6,
+            message: "Password must be at least 6 characters",
+          },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Password"
+            icon="lock-closed-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="Your password"
+            autoCapitalize="none"
+            secureTextEntry
+            errorText={errors.password?.message}
+          />
+        )}
+      />
+
+      <Link href="/(boarding)/forgot-password" style={styles.resetLink}>
+        Forgot your password?
+      </Link>
+
+      <FormButton
+        label={isSubmitting ? "Signing in..." : "Sign in"}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
+      />
+    </AuthScaffold>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
-    flexDirection: "column",
-    justifyContent: "space-evenly",
-  },
-  titleContainer: {
-    flexDirection: "column",
-    gap: 10,
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 30,
-    color: Colors.button,
-  },
-  subtitle: {
-    fontWeight: "bold",
-    fontSize: 30,
-    color: Colors.background,
-  },
-  inputContainer: {
-    gap: 10,
-    backgroundColor: Colors.lightGrey,
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 5,
-    borderColor: Colors.grey,
-    borderWidth: 1,
-    borderStyle: "solid",
-  },
-  inputField: {
-    fontSize: 17,
-    height: 40,
-    width: "100%",
-  },
-  forgotPasswordLink: {
+  resetLink: {
     color: Colors.button,
     textAlign: "right",
-    fontSize: 12,
-    fontWeight: "bold",
-    alignSelf: "flex-end",
-    marginTop: 10,
+    fontSize: 13,
+    fontWeight: "700",
   },
-  buttonContainer: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-  },
-  signInButton: {
-    padding: 10,
-    borderRadius: 10,
+  footerRow: {
     flexDirection: "row",
+    gap: 6,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.button,
-    width: "100%",
-    height: 50,
   },
-  signInButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 17,
-  },
-  signUpLinkContainer: {
-    flexDirection: "row",
-    gap: 5,
-  },
-  signUpLinkText: {
-    color: Colors.button,
-  },
-  signUpLink: {
-    color: Colors.button,
-    fontWeight: "bold",
-  },
-  orContinueText: {
-    color: Colors.button,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  googleSignInButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.grey,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    width: "100%",
-  },
-  googleSignInText: {
+  footerText: {
     color: Colors.text,
-    fontSize: 20,
+    fontSize: 14,
+  },
+  footerLink: {
+    color: Colors.button,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

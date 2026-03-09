@@ -1,10 +1,10 @@
 import { Text, Pressable, StyleSheet, View, Image } from "react-native";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/Colors";
+import { colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
 
-const TopBarComponent = () => {
+const HomeHeader = () => {
   const [greeting, setGreeting] = useState("");
   const router = useRouter();
 
@@ -28,7 +28,14 @@ const TopBarComponent = () => {
         </View>
         <Image
           source={require("@/assets/images/avatar.png")}
-          style={{ width: 65, height: 65, borderRadius: 100, opacity: 0.8, borderWidth: 1, borderColor: Colors.darkerGrey }}
+          style={{
+            width: 65,
+            height: 65,
+            borderRadius: 100,
+            opacity: 0.8,
+            borderWidth: 1,
+            borderColor: colors.darkerGrey,
+          }}
         />
       </View>
 
@@ -36,29 +43,29 @@ const TopBarComponent = () => {
         style={styles.searchButton}
         onPress={() => router.push("/(auth)/(other)/search")}
       >
-        <Ionicons name="search" size={30} color={Colors.button} />
-        <Text style={{ color: Colors.button, fontSize: 17 }}>My family</Text>
+        <Ionicons name="search" size={30} color={colors.button} />
+        <Text style={{ color: colors.button, fontSize: 17 }}>My family</Text>
       </Pressable>
     </>
   );
 };
 
-export default TopBarComponent;
+export default HomeHeader;
 
 const styles = StyleSheet.create({
   greetingText: {
     fontSize: 33,
-    color: Colors.button,
+    color: colors.button,
     fontWeight: "bold",
   },
   morningText: {
     fontSize: 17,
-    color: Colors.darkGrey,
+    color: colors.darkGrey,
   },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.grey,
+    backgroundColor: colors.grey,
     padding: 10,
     paddingHorizontal: 20,
     marginTop: 10,
@@ -67,6 +74,6 @@ const styles = StyleSheet.create({
     opacity: 0.3,
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: Colors.darkerGrey,
+    borderColor: colors.darkerGrey,
   },
 });

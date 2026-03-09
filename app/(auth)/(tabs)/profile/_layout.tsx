@@ -2,7 +2,7 @@ import { Pressable } from "react-native";
 import { router, Stack } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { useSession } from "@/app/ctx";
-import { Colors } from "@/constants/Colors";
+import { Colors } from "@/theme/colors";
 
 const ProfileLayout = () => {
   const { signOut } = useSession();
@@ -15,7 +15,7 @@ const ProfileLayout = () => {
           title: "Profile",
           headerShown: true,
           headerLeft: () => (
-            <Pressable onPress={() => router.push("/profile/edit-profile")}>
+            <Pressable onPress={() => router.push("/(auth)/(tabs)/profile/edit-profile")}>
               <FontAwesome
                 name="pencil-square-o"
                 size={25}
@@ -25,7 +25,7 @@ const ProfileLayout = () => {
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable onPress={signOut}>
+            <Pressable onPress={() => void signOut()}>
               <FontAwesome
                 name="sign-out"
                 size={27}

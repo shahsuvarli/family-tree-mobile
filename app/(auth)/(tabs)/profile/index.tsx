@@ -7,10 +7,10 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import { useEffect, useState } from "react";
-import { Colors } from "@/constants/Colors";
+import { useCallback, useEffect, useState } from "react";
+import { colors } from "@/theme/colors";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { supabase } from "@/db";
+import { supabase } from "@/lib/supabase/client";
 import { useIsFocused } from "@react-navigation/native";
 import { useSession } from "@/app/ctx";
 import { format } from "date-fns";
@@ -20,44 +20,51 @@ interface UserType {
   name: string;
   surname: string;
   email: string;
-  people_added: number;
-  family_members: number;
+  people_count: number;
+  relationship_count: number;
   created_at: string;
 }
 
-const Page = () => {
+export default function ProfileScreen() {
   const [user, setUser] = useState<UserType>();
   const image = "https://avatars.githubusercontent.com/u/46631807?v=4";
-  const is_focused = useIsFocused();
+  const isFocused = useIsFocused();
   const { session } = useSession();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("user")
-          .select("*")
-          .eq("uid", session)
-          .single();
-        if (!error) {
-          setUser({
-            ...data,
-            created_at: format(data.created_at, "dd/MM/yyyy"),
-          });
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  const fetchProfileOverview = useCallback(async () => {
+    if (!session) {
+      return;
+    }
 
-    fetchData();
-  }, [is_focused]);
+    try {
+      const { data, error } = await supabase
+        .from("profile_overview")
+        .select("*")
+        .eq("id", session)
+        .single();
+
+      if (!error) {
+        setUser({
+          ...data,
+          created_at: format(new Date(data.created_at), "dd/MM/yyyy"),
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (isFocused) {
+      void fetchProfileOverview();
+    }
+  }, [fetchProfileOverview, isFocused]);
 
   if (!user) {
     return (
       <ActivityIndicator
         size="large"
-        color={Colors.button}
+        color={colors.button}
         style={styles.activityIndicator}
       />
     );
@@ -79,10 +86,10 @@ const Page = () => {
             </View>
             <View style={styles.userInfoContainer}>
               <Text style={styles.userName}>
-                {user?.name} {user?.surname}
+                {user.name} {user.surname}
               </Text>
               <Text style={styles.userJoinDate}>
-                joined on {user?.created_at}
+                joined on {user.created_at}
               </Text>
             </View>
           </View>
@@ -93,7 +100,7 @@ const Page = () => {
                 size={30}
                 color="#808080"
               />
-              <Text style={styles.userEmail}>{user?.email}</Text>
+              <Text style={styles.userEmail}>{user.email}</Text>
             </View>
           </View>
         </View>
@@ -101,12 +108,12 @@ const Page = () => {
         {/* Cards view */}
         <View style={styles.cardsContainer}>
           <View style={styles.cardItemContainer}>
-            <Text style={styles.cardTitle}>{user?.people_added}</Text>
+            <Text style={styles.cardTitle}>{user.people_count}</Text>
             <Text style={styles.cardSubtitle}>people added</Text>
           </View>
           <View style={styles.cardItemContainer}>
-            <Text style={styles.cardTitle}>{user?.family_members}</Text>
-            <Text style={styles.cardSubtitle}>family members</Text>
+            <Text style={styles.cardTitle}>{user.relationship_count}</Text>
+            <Text style={styles.cardSubtitle}>relationships</Text>
           </View>
         </View>
 
@@ -125,7 +132,7 @@ const Page = () => {
                 <Ionicons
                   name="chevron-forward"
                   size={24}
-                  color={Colors.darkGrey}
+                  color={colors.darkGrey}
                 />
               </Pressable>
             )}
@@ -134,9 +141,7 @@ const Page = () => {
       </View>
     </View>
   );
-};
-
-export default Page;
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -166,7 +171,7 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     borderRadius: 100,
-    backgroundColor: Colors.button,
+    backgroundColor: colors.button,
   },
   image: {
     height: 100,
@@ -180,7 +185,7 @@ const styles = StyleSheet.create({
   userName: {
     fontWeight: "bold",
     fontSize: 25,
-    color: Colors.button,
+    color: colors.button,
   },
   userJoinDate: {
     fontSize: 15,
@@ -196,19 +201,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   userEmail: {
-    color: Colors.darkGrey,
+    color: colors.darkGrey,
     fontSize: 17,
   },
   cardsContainer: {
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: Colors.grey,
+    borderColor: colors.grey,
     flexDirection: "row",
     justifyContent: "space-around",
   },
   cardItemContainer: {
     borderStyle: "solid",
-    borderRightColor: Colors.grey,
+    borderRightColor: colors.grey,
     borderRightWidth: 1,
     width: "50%",
     flexDirection: "column",
@@ -220,10 +225,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 27,
     fontWeight: "bold",
-    color: Colors.button,
+    color: colors.button,
   },
   cardSubtitle: {
-    color: Colors.darkGrey,
+    color: colors.darkGrey,
     fontSize: 15,
   },
   bodyContainer: {
@@ -231,13 +236,13 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   settingsTitle: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 15,
     marginBottom: 10,
   },
   separator: {
     borderStyle: "solid",
-    borderBottomColor: Colors.grey,
+    borderBottomColor: colors.grey,
     borderBottomWidth: 1,
   },
   listItem: {
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderStyle: "solid",
-    borderBottomColor: Colors.grey,
+    borderBottomColor: colors.grey,
     borderBottomWidth: 1,
   },
   listItemText: {

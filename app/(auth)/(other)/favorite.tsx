@@ -1,35 +1,45 @@
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useEffect, useState } from "react";
-import { supabase } from "@/db";
+import { useCallback, useEffect, useState } from "react";
 import PersonLine from "@/components/PersonLine";
-import { PersonType } from "@/types";
+import { supabase } from "@/lib/supabase/client";
+import type { PersonType } from "@/types";
 import { router } from "expo-router";
+import { useSession } from "@/app/ctx";
 
-const Page = () => {
+export default function FavoritesScreen() {
   const [data, setData] = useState<PersonType[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const { session } = useSession();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!session) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase
+    const { data: people, error: peopleError } = await supabase
       .from("people")
       .select("*")
+      .eq("profile_id", session)
       .order("created_at", { ascending: false })
       .eq("is_favorite", true);
 
-    if (error) {
-      console.error(error.message);
+    if (peopleError) {
+      console.error(peopleError.message);
       setError("Failed to fetch data.");
+      setData([]);
     } else {
-      setData(data || []);
+      setData(people ?? []);
     }
 
     setLoading(false);
-  };
+  }, [session]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -38,10 +48,10 @@ const Page = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    void fetchData();
+  }, [fetchData]);
 
-  function handlePerson(item: any) {
+  function handlePerson(item: PersonType) {
     router.replace({
       pathname: "/(auth)/(other)/person",
       params: { id: item.id, name: item.name },
@@ -60,8 +70,14 @@ const Page = () => {
         <FlatList
           data={data}
           contentContainerStyle={{ padding: 20 }}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => <PersonLine item={item} handlePerson={handlePerson} icon="chevron-forward" />}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <PersonLine
+              item={item}
+              handlePerson={handlePerson}
+              icon="chevron-forward"
+            />
+          )}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
           }
@@ -69,9 +85,7 @@ const Page = () => {
       )}
     </View>
   );
-};
-
-export default Page;
+}
 
 const styles = StyleSheet.create({
   container: {

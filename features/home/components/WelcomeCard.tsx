@@ -1,7 +1,7 @@
-import { Colors } from "@/constants/Colors";
+import { colors } from "@/theme/colors";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-const WelcomeBox = () => {
+const WelcomeCard = () => {
   return (
     <View style={styles.welcomeBox}>
       <View style={styles.welcomeTextContainer}>
@@ -18,13 +18,13 @@ const WelcomeBox = () => {
   );
 };
 
-export default WelcomeBox;
+export default WelcomeCard;
 
 const styles = StyleSheet.create({
   welcomeBox: {
     flexDirection: "row",
     borderRadius: 20,
-    backgroundColor: Colors.grey,
+    backgroundColor: colors.grey,
     padding: 20,
     marginTop: 10,
     gap: 10,
@@ -37,11 +37,11 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 25,
     fontWeight: "bold",
-    color: Colors.button,
+    color: colors.button,
   },
   welcomeSubtitle: {
     fontSize: 17,
-    color: Colors.button,
+    color: colors.button,
   },
   welcomeImage: {
     width: 150,

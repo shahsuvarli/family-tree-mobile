@@ -1,8 +1,8 @@
 import { Pressable, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
-import { Colors } from "@/constants/Colors";
-import { usePersonStore } from "@/utils/store";
+import { FontAwesome } from "@expo/vector-icons";
+import { Colors } from "@/theme/colors";
+import { usePersonStore } from "@/store/person-store";
 
 export default function OtherLayout() {
   const {
@@ -35,8 +35,8 @@ export default function OtherLayout() {
                 }}
               >
                 <Pressable onPress={handleFavorite}>
-                  <AntDesign
-                    name={person.is_favorite ? "star" : "staro"}
+                  <FontAwesome
+                    name={person.is_favorite ? "star" : "star-o"}
                     size={30}
                     color={Colors.button}
                   />

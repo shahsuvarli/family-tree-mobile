@@ -1,18 +1,27 @@
 import { Redirect, Stack } from "expo-router";
 import { useSession } from "../ctx";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Colors } from "@/theme/colors";
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
-  // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
-    return <ActivityIndicator />;
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" color={Colors.button} />
+      </View>
+    );
   }
 
-  // Only require authentication within the (app) group's layout as users
-  // need to be able to access the (auth) group and sign in again.
   if (!session) {
-    return <Redirect href="../../(boarding)" />;
+    return <Redirect href="/(boarding)" />;
   }
 
   return (

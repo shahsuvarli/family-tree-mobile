@@ -1,56 +1,42 @@
-import {
-  SafeAreaView,
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-} from "react-native";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Colors } from "@/constants/Colors";
-import { Ionicons } from "@expo/vector-icons";
-import Toast from "react-native-toast-message";
-import { supabase } from "@/db";
 import { useSession } from "@/app/ctx";
+import FormButton from "@/components/forms/FormButton";
+import FormTextField from "@/components/forms/FormTextField";
+import { supabase } from "@/lib/supabase/client";
+import { colors } from "@/theme/colors";
+import { useCallback, useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import Toast from "react-native-toast-message";
 
-interface FormData {
+interface ProfileFormValues {
   name: string;
   surname: string;
 }
 
-export default function Page() {
+export default function EditProfileScreen() {
   const { session } = useSession();
-
   const {
     handleSubmit,
     control,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<ProfileFormValues>({
     defaultValues: {
       name: "",
       surname: "",
-      birthDate: "",
-      gender: 1,
-      maritalStatus: 1,
-      life: 1,
-      notes: "",
     },
   });
-  const fetchData = async () => {
-    const { data, error } = await supabase
-      .from("user")
-      .select("name, surname")
-      .filter("uid", "eq", session)
-      .single();
-    if (data) {
-      reset({
-        name: data.name || "",
-        surname: data.surname || "",
-      });
+
+  const fetchProfile = useCallback(async () => {
+    if (!session) {
+      return;
     }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("name, surname")
+      .eq("id", session)
+      .single();
 
     if (error) {
       Toast.show({
@@ -60,20 +46,27 @@ export default function Page() {
         position: "bottom",
         bottomOffset: 50,
       });
+      return;
     }
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
 
-  const onSubmit = async (values: FormData) => {
+    reset({
+      name: data.name || "",
+      surname: data.surname || "",
+    });
+  }, [reset, session]);
+
+  useEffect(() => {
+    void fetchProfile();
+  }, [fetchProfile]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
     const { data, error } = await supabase
-      .from("user")
+      .from("profiles")
       .update({
-        name: values.name,
-        surname: values.surname,
+        name: values.name.trim(),
+        surname: values.surname.trim(),
       })
-      .eq("uid", session)
+      .eq("id", session)
       .select("name, surname")
       .single();
 
@@ -81,21 +74,22 @@ export default function Page() {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "An error occurred while adding the person",
+        text2: "An error occurred while updating the profile",
         position: "bottom",
         bottomOffset: 100,
         swipeable: true,
       });
-    } else {
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: `${data.name} ${data.surname} updated successfully`,
-        position: "bottom",
-        bottomOffset: 100,
-        swipeable: true,
-      });
+      return;
     }
+
+    Toast.show({
+      type: "success",
+      text1: "Success",
+      text2: `${data.name} ${data.surname} updated successfully`,
+      position: "bottom",
+      bottomOffset: 100,
+      swipeable: true,
+    });
   };
 
   return (
@@ -104,68 +98,49 @@ export default function Page() {
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <Controller
             control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <View style={styles.inputLabelContainer}>
-                  <Text style={styles.inputText}>Name</Text>
-                  {errors.name && (
-                    <Text style={styles.errorText}>*required.</Text>
-                  )}
-                </View>
-
-                <View style={styles.inputWithIconContainer}>
-                  <Ionicons
-                    name="person-outline"
-                    size={20}
-                    color={styles.iconColor.color}
-                  />
-                  <TextInput
-                    style={styles.inputField}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Enter your name"
-                  />
-                </View>
-              </View>
-            )}
             name="name"
-            rules={{ required: true }}
+            rules={{ required: "Required" }}
+            render={({ field: { onChange, value } }) => (
+              <FormTextField
+                label="Name"
+                icon="person-outline"
+                value={value}
+                onChangeText={onChange}
+                placeholder="Enter your name"
+                labelStyle={styles.formLabel}
+                inputRowStyle={styles.compactInputRow}
+                inputStyle={styles.compactInput}
+                errorText={errors.name?.message}
+              />
+            )}
           />
 
           <Controller
             control={control}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View style={styles.inputContainer}>
-                <View style={styles.inputLabelContainer}>
-                  <Text style={styles.inputText}>Surname</Text>
-                  {errors.surname && (
-                    <Text style={styles.errorText}>*required.</Text>
-                  )}
-                </View>
-
-                <View style={styles.inputWithIconContainer}>
-                  <Ionicons
-                    name="person-outline"
-                    size={20}
-                    color={styles.iconColor.color}
-                  />
-                  <TextInput
-                    style={styles.inputField}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="Enter the surname"
-                  />
-                </View>
-              </View>
-            )}
             name="surname"
-            rules={{ required: false }}
+            rules={{ required: "Required" }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormTextField
+                label="Surname"
+                icon="person-outline"
+                value={value}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder="Enter the surname"
+                labelStyle={styles.formLabel}
+                inputRowStyle={styles.compactInputRow}
+                inputStyle={styles.compactInput}
+                errorText={errors.surname?.message}
+              />
+            )}
           />
         </ScrollView>
-        <Pressable style={styles.saveButton} onPress={handleSubmit(onSubmit)}>
-          <Text style={styles.saveButtonText}>Update</Text>
-        </Pressable>
+        <FormButton
+          label="Update"
+          onPress={handleSubmit(onSubmit)}
+          containerStyle={styles.saveButton}
+          textStyle={styles.saveButtonText}
+        />
       </View>
     </SafeAreaView>
   );
@@ -186,103 +161,37 @@ const styles = StyleSheet.create({
     paddingBottom: 27,
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: Colors.button,
+    borderColor: colors.button,
     padding: 10,
   },
   scrollViewContainer: {
     backgroundColor: "#fff",
-    flexDirection: "column",
-    borderRadius: 10,
-    gap: 0,
+    gap: 14,
   },
-  inputContainer: {
-    padding: 7,
-    borderRadius: 5,
-    flexDirection: "column",
-    gap: 10,
-  },
-  inputLabelContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 10,
-  },
-  inputText: {
+  formLabel: {
     color: "#000000a6",
     fontSize: 17,
+    fontWeight: "400",
   },
-  errorText: {
-    color: "red",
-    fontSize: 14,
-  },
-  inputWithIconContainer: {
-    flexDirection: "row",
-    gap: 10,
+  compactInputRow: {
+    minHeight: 48,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "#0000003d",
-    borderStyle: "solid",
-    alignItems: "center",
+    backgroundColor: "#fff",
     paddingHorizontal: 10,
   },
-  iconColor: {
-    color: "#0000005a",
-  },
-  inputField: {
+  compactInput: {
     fontSize: 17,
-    paddingVertical: 10,
-    flex: 1,
-    height: 45,
-  },
-  dateText: {
-    fontSize: 17,
-    paddingVertical: 3,
-    color: "#000000a6",
-  },
-  datePicker: {
-    backgroundColor: "#fff",
-    height: 150,
-  },
-  datePickerButtonsContainer: {
-    flexDirection: "row",
-    gap: 20,
-    justifyContent: "space-between",
-    padding: 10,
-  },
-  datePickerButton: {
-    backgroundColor: "#0a7ea4",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    flex: 1,
-  },
-  datePickerButtonText: {
-    color: "#fff",
-    fontSize: 17,
-  },
-  optionsContainer: {
-    flexDirection: "row",
-    gap: 5,
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  notesInput: {
-    fontSize: 17,
-    height: 100,
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#0000003d",
-    borderRadius: 5,
-    padding: 10,
+    color: colors.text,
+    minHeight: 45,
   },
   saveButton: {
-    backgroundColor: Colors.button,
-    paddingVertical: 15,
+    minHeight: 52,
     borderRadius: 5,
-    alignItems: "center",
   },
   saveButtonText: {
-    color: "#fff",
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "400",
   },
 });
