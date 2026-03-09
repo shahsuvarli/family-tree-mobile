@@ -8,10 +8,12 @@ import {
 } from "@/features/people/lib/person-form";
 import { supabase } from "@/lib/supabase/client";
 import { router } from "expo-router";
+import { Stack } from "expo-router";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
+  KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -91,25 +93,39 @@ export default function AddPersonScreen() {
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
-      <View style={styles.mainContainer}>
-        <Text style={styles.title}>Add new person</Text>
-        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <PersonFormFields
-            control={control}
-            errors={errors}
-            date={date}
-            showCalendar={showCalendar}
-            onToggleCalendar={toggleCalendar}
-            onDateChange={handleDateChange}
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
+      >
+        <View style={styles.mainContainer}>
+          <Text style={styles.title}>Add new person</Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContainer}
+            automaticallyAdjustKeyboardInsets
+            contentInsetAdjustmentBehavior="always"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <PersonFormFields
+              control={control}
+              errors={errors}
+              date={date}
+              showCalendar={showCalendar}
+              onToggleCalendar={toggleCalendar}
+              onDateChange={handleDateChange}
+            />
+          </ScrollView>
+          <FormButton
+            label="Save"
+            onPress={handleSubmit(onSubmit)}
+            containerStyle={styles.saveButton}
+            textStyle={styles.saveButtonText}
           />
-        </ScrollView>
-        <FormButton
-          label="Save"
-          onPress={handleSubmit(onSubmit)}
-          containerStyle={styles.saveButton}
-          textStyle={styles.saveButtonText}
-        />
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -118,6 +134,9 @@ const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  keyboardView: {
+    flex: 1,
   },
   mainContainer: {
     borderRadius: 10,

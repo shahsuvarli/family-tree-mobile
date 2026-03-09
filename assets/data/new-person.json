@@ -2,35 +2,35 @@
   "lifeOptions": [
     {
       "id": 1,
-      "value": "Alive",
+      "value": "Living",
       "icon": "heart"
     },
     {
       "id": 2,
-      "value": "Dead",
-      "icon": "heart-dislike-outline"
+      "value": "Deceased",
+      "icon": "heart-dislike"
     },
     {
       "id": 3,
-      "value": "No data",
-      "icon": "help"
+      "value": "Unknown",
+      "icon": "help-circle"
     }
   ],
   "maritalStatusOptions": [
     {
       "id": 1,
       "value": "Single",
-      "icon": "person-outline"
+      "icon": "person"
     },
     {
       "id": 2,
       "value": "Married",
-      "icon": "people-outline"
+      "icon": "people"
     },
     {
       "id": 3,
-      "value": "No data",
-      "icon": "help"
+      "value": "Unknown",
+      "icon": "help-circle"
     }
   ],
   "genderOptions": [
