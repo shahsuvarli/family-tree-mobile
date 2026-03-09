@@ -17,7 +17,9 @@ const PersonLine = ({ item, handlePerson, icon, relation_id }: Props) => {
   const { familyData, setFamilyData } = usePersonStore();
 
   const handleLongPress = async (item: any) => {
+    console.log(item);
     const { error } = await supabase.from("relation").delete().eq("id", item.id);
+    console.log(error);
     if (!error) {
       const newFamilyData = familyData.map((data: any) => {
         if (data.relation_id === relation_id) {

@@ -11,7 +11,6 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { format } from "date-fns";
 import Toast from "react-native-toast-message";
 import AddNewSelection from "@/components/AddNewSelection";
 import { supabase } from "@/db";
@@ -21,7 +20,6 @@ import {
   lifeOptions,
   maritalStatusOptions,
 } from "@/assets/data/new-person.json";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { Option } from "@/types";
@@ -32,7 +30,6 @@ export default function HomeScreen() {
     control,
     formState: { errors },
     reset,
-    setValue,
   } = useForm({
     defaultValues: {
       name: "",
@@ -49,10 +46,6 @@ export default function HomeScreen() {
 
   const { session } = useSession();
   const onSubmit = async (values: any) => {
-    // const date = new Date(values.birthDate);
-    // const [date, setDate] = useState<string>(
-    //   new Date(values.birthDate).toLocaleString()
-    // );
     const surname = values.surname ? values.surname[0] : "";
     const initials = values.name[0] + surname;
     const { data, error } = await supabase
@@ -97,10 +90,8 @@ export default function HomeScreen() {
         pathname: "/(auth)/(other)/person",
         params: { id: data.id, name: data.name },
       });
-      // Redirect({ href: "/(auth)/(tabs)/home/person",  });
     }
   };
-  // const [date, setDate] = useState<string>("");
   const [showCalendar, setShowCalendar] = useState(false);
   const toggleCalendar = () => setShowCalendar(!showCalendar);
 
@@ -343,8 +334,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     gap: 20,
-    // paddingBottom: 27,
-    // padding: 10,
   },
   scrollViewContainer: {
     backgroundColor: "#fff",

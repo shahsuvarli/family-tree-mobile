@@ -34,7 +34,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-new"
         options={{
-          title: "Create",
+          title: "Add new person",
           // headerTitle: "New person",
           // tabBarIcon: () => (
           //   <Feather name="plus-square" color={Colors.button} size={30} />
