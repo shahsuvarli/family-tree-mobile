@@ -20,11 +20,14 @@ export default function OtherLayout() {
       />
       <Stack.Screen
         name="person"
-        options={() => ({
-          headerShown: true,
-          headerBackTitleVisible: false,
-          title: `${person.name}'s family`,
-          headerRight: () => {
+        options={({ route }: any) => {
+          const displayName = route.params?.name ?? person.name;
+
+          return {
+            headerShown: true,
+            headerBackTitleVisible: false,
+            title: displayName ? `${displayName}'s family` : "Family",
+            headerRight: () => {
             return (
               <View
                 style={{
@@ -45,7 +48,7 @@ export default function OtherLayout() {
                   onPress={() =>
                     router.push({
                       pathname: "/(auth)/(tabs)/home/edit-person",
-                      params: { person_id: person.id },
+                      params: { person_id: person.id || route.params?.id },
                     })
                   }
                 >
@@ -57,9 +60,10 @@ export default function OtherLayout() {
                 </Pressable>
               </View>
             );
-          }
+            },
 
-        })}
+          };
+        }}
       />
       <Stack.Screen
         name="dashboard"
@@ -108,6 +112,14 @@ export default function OtherLayout() {
           title: "Add relative",
           headerShown: true,
           presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="add-new"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+          animation: "slide_from_bottom",
         }}
       />
     </Stack>

@@ -1,14 +1,29 @@
 import { StyleSheet, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DashboardCards from "@/features/home/components/DashboardCards";
 import WelcomeCard from "@/features/home/components/WelcomeCard";
 import HomeHeader from "@/features/home/components/HomeHeader";
 import HomeStats from "@/features/home/components/HomeStats";
+import {
+  APP_TAB_BAR_HEIGHT,
+  APP_TAB_BAR_MARGIN,
+} from "@/components/navigation/TabBar";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ flexDirection: "column", gap: 10 }}
+      contentContainerStyle={[
+        styles.content,
+        {
+          paddingTop: insets.top + 16,
+          paddingBottom:
+            APP_TAB_BAR_HEIGHT + Math.max(insets.bottom, APP_TAB_BAR_MARGIN) + 24,
+        },
+      ]}
+      showsVerticalScrollIndicator={false}
     >
       <HomeHeader />
       <WelcomeCard />
@@ -20,10 +35,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "column",
-    paddingHorizontal: 15,
     flex: 1,
     backgroundColor: "#f0f0f0",
-    paddingTop: 100,
+  },
+  content: {
+    paddingHorizontal: 16,
+    gap: 16,
   },
 });

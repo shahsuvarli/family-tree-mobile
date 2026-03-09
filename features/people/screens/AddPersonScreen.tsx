@@ -7,23 +7,22 @@ import {
   PersonFormValues,
 } from "@/features/people/lib/person-form";
 import { supabase } from "@/lib/supabase/client";
-import { colors } from "@/theme/colors";
-import { useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { format } from "date-fns";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-export default function EditPersonScreen() {
-  const { person_id: personId } = useLocalSearchParams<{ person_id: string }>();
-  const [date, setDate] = useState<Date>();
+export default function AddPersonScreen() {
+  const [date, setDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const { session } = useSession();
   const {
@@ -33,47 +32,8 @@ export default function EditPersonScreen() {
     reset,
     setValue,
   } = useForm<PersonFormValues>({
-    defaultValues: createPersonFormDefaults(),
+    defaultValues: createPersonFormDefaults(new Date()),
   });
-
-  const fetchPerson = useCallback(async () => {
-    if (!personId) {
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("people")
-      .select("*")
-      .eq("id", personId)
-      .single();
-
-    if (error) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: error.message,
-        position: "bottom",
-        bottomOffset: 50,
-      });
-      return;
-    }
-
-    const initialDate = data.birth_date ? new Date(data.birth_date) : undefined;
-    setDate(initialDate);
-    reset({
-      ...createPersonFormDefaults(initialDate),
-      name: data.name || "",
-      surname: data.surname || "",
-      gender: data.gender ?? 1,
-      maritalStatus: data.marital_status ?? 1,
-      life: data.life ?? 1,
-      notes: data.notes || "",
-    });
-  }, [personId, reset]);
-
-  useEffect(() => {
-    void fetchPerson();
-  }, [fetchPerson]);
 
   const toggleCalendar = () => {
     setShowCalendar((currentValue) => !currentValue);
@@ -94,16 +54,15 @@ export default function EditPersonScreen() {
   const onSubmit = async (values: PersonFormValues) => {
     const { data, error } = await supabase
       .from("people")
-      .update(buildPersonPayload(values, date, session))
-      .eq("id", personId)
-      .select("name, surname")
+      .insert([buildPersonPayload(values, date, session)])
+      .select("id, name, surname")
       .single();
 
     if (error) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "An error occurred while updating the person",
+        text2: "An error occurred while adding the person",
         position: "bottom",
         bottomOffset: 100,
         swipeable: true,
@@ -114,16 +73,26 @@ export default function EditPersonScreen() {
     Toast.show({
       type: "success",
       text1: "Success",
-      text2: `${data.name} ${data.surname} updated successfully`,
+      text2: `${data.name} ${data.surname} added successfully`,
       position: "bottom",
       bottomOffset: 100,
       swipeable: true,
+    });
+
+    const nextDate = new Date();
+    setDate(nextDate);
+    setShowCalendar(false);
+    reset(createPersonFormDefaults(nextDate));
+    router.replace({
+      pathname: "/(auth)/(other)/person",
+      params: { id: data.id, name: data.name },
     });
   };
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
       <View style={styles.mainContainer}>
+        <Text style={styles.title}>Add new person</Text>
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
           <PersonFormFields
             control={control}
@@ -134,13 +103,13 @@ export default function EditPersonScreen() {
             onDateChange={handleDateChange}
           />
         </ScrollView>
+        <FormButton
+          label="Save"
+          onPress={handleSubmit(onSubmit)}
+          containerStyle={styles.saveButton}
+          textStyle={styles.saveButtonText}
+        />
       </View>
-      <FormButton
-        label="Update"
-        onPress={handleSubmit(onSubmit)}
-        containerStyle={styles.saveButton}
-        textStyle={styles.saveButtonText}
-      />
     </SafeAreaView>
   );
 }
@@ -151,17 +120,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   mainContainer: {
-    backgroundColor: "#fff",
     borderRadius: 10,
     margin: 10,
     flex: 1,
     flexDirection: "column",
     gap: 20,
-    paddingBottom: 27,
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: colors.button,
-    padding: 10,
+  },
+  title: {
+    color: "#000000a6",
+    fontSize: 20,
+    textAlign: "center",
+    width: "100%",
   },
   scrollViewContainer: {
     backgroundColor: "#fff",
@@ -170,8 +139,6 @@ const styles = StyleSheet.create({
   saveButton: {
     minHeight: 52,
     borderRadius: 5,
-    margin: 10,
-    marginBottom: 20,
   },
   saveButtonText: {
     fontSize: 20,

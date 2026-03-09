@@ -1,21 +1,56 @@
-import { View, Text, Image, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { RelativePathString, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { dashboardCards } from "@/features/home/data/dashboard-cards";
 import { useSession } from "@/app/ctx";
 import type { DashboardCard } from "@/types/ui";
+import findPrimaryPerson from "@/services/people/findPrimaryPerson";
+
+const CARD_GAP = 12;
+const HOME_HORIZONTAL_PADDING = 16;
 
 const DashboardCards = () => {
   const { session } = useSession();
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - HOME_HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
+
+  async function handleCardPress(item: DashboardCard) {
+    if (!session) {
+      return;
+    }
+
+    if (item.route === "/(auth)/(other)/person") {
+      const person = await findPrimaryPerson(session);
+
+      router.push({
+        pathname: item.route as RelativePathString,
+        params: {
+          id: person?.id ?? session,
+          name: person?.name ?? "",
+        },
+      });
+      return;
+    }
+
+    router.push({
+      pathname: item.route as RelativePathString,
+      params: { id: session },
+    });
+  }
 
   return (
     <View style={styles.gridContainer}>
       {dashboardCards.map((item: DashboardCard) => (
         <Pressable
-          style={styles.gridCardContainer}
-          onPress={() =>
-            router.push({ pathname: item.route as RelativePathString, params: { id: session } })
-          }
+          style={[styles.gridCardContainer, { width: cardWidth }]}
+          onPress={() => void handleCardPress(item)}
           key={item.id}
         >
           <LinearGradient
@@ -41,17 +76,15 @@ export default DashboardCards;
 
 const styles = StyleSheet.create({
   gridContainer: {
-    flexWrap: "wrap",
     flexDirection: "row",
-    justifyContent: "center",
-    flex: 2,
-    marginTop: 10,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     width: "100%",
-    gap: 7,
+    rowGap: CARD_GAP,
     borderRadius: 20,
   },
   gridCardContainer: {
-    flexBasis: "49%",
+    alignSelf: "stretch",
   },
   gridItem: {
     flexDirection: "column",
@@ -59,6 +92,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     height: 110,
     gap: 10,
+    width: "100%",
   },
 
   gridItemTop: {
