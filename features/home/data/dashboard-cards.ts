@@ -1,6 +1,6 @@
-import { Result } from "@/types";
+import type { DashboardCard } from "@/types/ui";
 
-export const results: Result[] = [
+export const dashboardCards: DashboardCard[] = [
   {
     id: 1,
     title: "Family",

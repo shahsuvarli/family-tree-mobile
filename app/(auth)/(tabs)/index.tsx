@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 
-const Page = () => {
+const TabsIndexRedirect = () => {
   return <Redirect href="../(auth)/(tabs)/home" />;
 };
 
-export default Page;
+export default TabsIndexRedirect;

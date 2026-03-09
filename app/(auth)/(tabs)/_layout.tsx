@@ -1,20 +1,11 @@
-import { MyTabBar } from "@/components/tab";
-import { Colors } from "@/constants/Colors";
-import { Feather, Ionicons, Octicons } from "@expo/vector-icons";
+import { AppTabBar } from "@/components/navigation/TabBar";
+import { colors } from "@/theme/colors";
+import { Ionicons, Octicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <MyTabBar {...props} />}
-    // initialRouteName="home"
-    // screenOptions={{
-    //   tabBarShowLabel: false,
-    //   tabBarStyle: {
-    //     borderBottomColor: "red",
-    //   },
-    // }}
-    >
+    <Tabs tabBar={(props) => <AppTabBar {...props} />}>
       <Tabs.Screen
         name="index"
         options={{
@@ -27,7 +18,7 @@ export default function TabLayout() {
           title: "Home",
           headerShown: false,
           tabBarIcon: () => (
-            <Octicons name="home" size={30} color={Colors.button} />
+            <Octicons name="home" size={30} color={colors.button} />
           ),
         }}
       />
@@ -35,10 +26,6 @@ export default function TabLayout() {
         name="add-new"
         options={{
           title: "Add new person",
-          // headerTitle: "New person",
-          // tabBarIcon: () => (
-          //   <Feather name="plus-square" color={Colors.button} size={30} />
-          // ),
         }}
       />
       <Tabs.Screen
@@ -49,20 +36,18 @@ export default function TabLayout() {
             <Ionicons
               name="person-circle-outline"
               size={35}
-              color={Colors.button}
+              color={colors.button}
             />
           ),
           tabBarItemStyle: {
-            backgroundColor: Colors.background,
+            backgroundColor: colors.background,
           },
           tabBarLabelStyle: {
-            color: Colors.button,
+            color: colors.button,
           },
           title: "Profile",
         }}
       />
-    </Tabs >
-
+    </Tabs>
   );
 }
-

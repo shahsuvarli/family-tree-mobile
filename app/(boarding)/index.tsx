@@ -1,95 +1,76 @@
-import { View, Text, Pressable, Image } from "react-native";
+import AuthScaffold from "@/components/auth/AuthScaffold";
+import { Colors } from "@/theme/colors";
 import { router } from "expo-router";
-import { Colors } from "@/constants/Colors";
-import { StyleSheet } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-const Page = () => {
+const BoardingScreen = () => {
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("@/assets/images/family.png")}
-        style={styles.image}
-      />
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Connecting Generations</Text>
-        <Text style={styles.subtitle}>Unveiling Legacies</Text>
-      </View>
-      <View>
+    <AuthScaffold
+      eyebrow="Family Tree"
+      title="Start your family story"
+      subtitle="Create your tree, add relatives, and keep every branch in one place."
+      description="Sign in to continue with your existing tree, or create a new account to start building from scratch."
+      footer={
+        <Text style={styles.footerText}>
+          Private by default. Every profile only sees its own family data.
+        </Text>
+      }
+    >
+      <View style={styles.actions}>
         <Pressable
-          onPress={() => router.push("/(boarding)/sign-in")}
-          style={styles.button}
+          style={styles.primaryButton}
+          onPress={() => router.push("/(boarding)/sign-up")}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.primaryButtonText}>Create account</Text>
         </Pressable>
+
         <Pressable
-          onPress={() => router.push("./sign-up")}
           style={styles.secondaryButton}
+          onPress={() => router.push("/(boarding)/sign-in")}
         >
-          <Text style={styles.secondaryButtonText}>Register</Text>
+          <Text style={styles.secondaryButtonText}>I already have an account</Text>
         </Pressable>
       </View>
-    </View>
+    </AuthScaffold>
   );
 };
 
-export default Page;
+export default BoardingScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-    backgroundColor: Colors.background,
+  actions: {
+    gap: 12,
   },
-  image: {
-    width: 300,
-    height: 350,
-    alignSelf: "center",
-  },
-  titleContainer: {
-    marginVertical: 20,
-    flexDirection: "column",
-    gap: 10,
-  },
-  title: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: Colors.button,
-  },
-  subtitle: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: Colors.secondaryButton,
-    textAlign: "right",
-  },
-  button: {
+  primaryButton: {
     backgroundColor: Colors.button,
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    height: 50,
-    flexDirection: "row",
-    justifyContent: "center",
+    borderRadius: 16,
+    minHeight: 54,
     alignItems: "center",
+    justifyContent: "center",
   },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "700",
   },
   secondaryButton: {
-    backgroundColor: Colors.secondaryButton,
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    height: 50,
-    flexDirection: "row",
-    justifyContent: "center",
+    borderRadius: 16,
+    minHeight: 54,
     alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(47,79,79,0.18)",
+    backgroundColor: Colors.secondaryButton,
   },
   secondaryButtonText: {
     color: Colors.button,
-    fontWeight: "bold",
     fontSize: 16,
+    fontWeight: "700",
+  },
+  footerText: {
+    color: Colors.text,
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 19,
   },
 });

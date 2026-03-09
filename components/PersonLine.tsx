@@ -1,36 +1,36 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Colors } from "@/constants/Colors";
+import { Colors } from "@/theme/colors";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "@/db";
+import { supabase } from "@/lib/supabase/client";
 import { PersonType } from "@/types";
-import { usePersonStore } from "@/utils/store";
+import { usePersonStore } from "@/store/person-store";
 
 interface Props {
   item: PersonType;
-  handlePerson: any;
+  handlePerson: (item: PersonType) => void;
   icon: keyof typeof Ionicons.glyphMap;
-  relation_id?: string;
+  sectionCode?: string;
 }
 
-const PersonLine = ({ item, handlePerson, icon, relation_id }: Props) => {
+const PersonLine = ({ item, handlePerson, icon, sectionCode }: Props) => {
   const created_at = new Date(item.created_at).toLocaleDateString();
   const { familyData, setFamilyData } = usePersonStore();
 
   const handleLongPress = async (item: any) => {
     console.log(item);
-    const { error } = await supabase.from("relation").delete().eq("id", item.id);
+    const { error } = await supabase.from("relationships").delete().eq("id", item.id);
     console.log(error);
     if (!error) {
       const newFamilyData = familyData.map((data: any) => {
-        if (data.relation_id === relation_id) {
-          const newData = data.data.filter((person: any) => person.id !== item.id)
-          return { ...data, data: newData }
+        if (data.code === sectionCode) {
+          const newData = data.data.filter((person: any) => person.id !== item.id);
+          return { ...data, data: newData };
         }
         else {
-          return data
+          return data;
         }
-      })
-      setFamilyData(newFamilyData)
+      });
+      setFamilyData(newFamilyData);
     }
   };
   return (

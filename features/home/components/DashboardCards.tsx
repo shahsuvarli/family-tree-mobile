@@ -1,15 +1,16 @@
 import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { RelativePathString, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { results } from "@/assets/data/home-page-cards";
+import { dashboardCards } from "@/features/home/data/dashboard-cards";
 import { useSession } from "@/app/ctx";
-import { Result } from "@/types";
+import type { DashboardCard } from "@/types/ui";
 
-const BottomsCards = () => {
+const DashboardCards = () => {
   const { session } = useSession();
+
   return (
     <View style={styles.gridContainer}>
-      {results.map((item: Result) => (
+      {dashboardCards.map((item: DashboardCard) => (
         <Pressable
           style={styles.gridCardContainer}
           onPress={() =>
@@ -36,7 +37,7 @@ const BottomsCards = () => {
   );
 };
 
-export default BottomsCards;
+export default DashboardCards;
 
 const styles = StyleSheet.create({
   gridContainer: {

@@ -9,11 +9,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { StatusBar } from "react-native";
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "sign-in",
-};
-
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {

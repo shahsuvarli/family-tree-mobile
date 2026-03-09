@@ -6,42 +6,52 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/Colors";
-import { supabase } from "@/db";
+import { colors } from "@/theme/colors";
+import { supabase } from "@/lib/supabase/client";
 import { useSession } from "@/app/ctx";
 import PersonLine from "@/components/PersonLine";
-import { PersonType } from "@/types";
+import type { PersonType } from "@/types";
 import { router } from "expo-router";
 
-const page = () => {
+export default function SearchPeopleScreen() {
   const [search, setSearch] = useState<string>("");
   const { session } = useSession();
-  const [data, setData] = useState<PersonType[]>();
+  const [data, setData] = useState<PersonType[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchSearchResults = async (search: string) => {
-    setRefreshing(true);
-    const { data, error } = await supabase
-      .from("people")
-      .select("*")
-      .filter("user_id", "eq", session)
-      .order("created_at", { ascending: false })
-      .or(`name.ilike.%${search}%,surname.ilike.%${search}%`);
+  const fetchSearchResults = useCallback(
+    async (searchText: string) => {
+      if (!session) {
+        setData([]);
+        setRefreshing(false);
+        return;
+      }
 
-    setData(data || []);
-    setRefreshing(false);
-  };
+      setRefreshing(true);
+
+      const { data: people } = await supabase
+        .from("people")
+        .select("*")
+        .eq("profile_id", session)
+        .order("created_at", { ascending: false })
+        .or(`name.ilike.%${searchText}%,surname.ilike.%${searchText}%`);
+
+      setData(people ?? []);
+      setRefreshing(false);
+    },
+    [session]
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchSearchResults(search);
+      void fetchSearchResults(search);
     }, 500);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [fetchSearchResults, search]);
 
-  function handlePerson(item: any) {
+  function handlePerson(item: PersonType) {
     router.replace({
       pathname: "/(auth)/(other)/person",
       params: { id: item.id, name: item.name },
@@ -59,7 +69,7 @@ const page = () => {
       }}
     >
       <View style={styles.searchButton}>
-        <Ionicons name="search" size={30} color={Colors.button} />
+        <Ionicons name="search" size={30} color={colors.button} />
         <TextInput
           style={styles.searchInput}
           value={search}
@@ -70,28 +80,32 @@ const page = () => {
       </View>
       <FlatList
         data={data}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <PersonLine item={item} handlePerson={handlePerson} icon="chevron-forward" />}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <PersonLine
+            item={item}
+            handlePerson={handlePerson}
+            icon="chevron-forward"
+          />
+        )}
         refreshing={refreshing}
-        onRefresh={() => fetchSearchResults(search)}
+        onRefresh={() => void fetchSearchResults(search)}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => fetchSearchResults(search)}
+            onRefresh={() => void fetchSearchResults(search)}
           />
         }
         ListEmptyComponent={() => (
           <View style={{ alignItems: "center", padding: 20 }}>
-            <Ionicons name="search" size={100} color={Colors.button} />
-            <Text style={{ color: Colors.button }}>No results found</Text>
+            <Ionicons name="search" size={100} color={colors.button} />
+            <Text style={{ color: colors.button }}>No results found</Text>
           </View>
         )}
       />
     </View>
   );
-};
-
-export default page;
+}
 
 const styles = StyleSheet.create({
   searchButton: {
@@ -102,13 +116,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: Colors.darkerGrey,
+    borderColor: colors.darkerGrey,
   },
   searchInput: {
     flex: 1,
     fontSize: 20,
     padding: 5,
-    color: Colors.button,
+    color: colors.button,
     paddingVertical: 15,
   },
 });

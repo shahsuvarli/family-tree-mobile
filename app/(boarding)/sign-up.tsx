@@ -1,326 +1,239 @@
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Image,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+import AuthScaffold from "@/components/auth/AuthScaffold";
+import FormButton from "@/components/forms/FormButton";
+import FormTextField from "@/components/forms/FormTextField";
+import { Colors } from "@/theme/colors";
+import { supabase } from "@/lib/supabase/client";
 import { Link, router } from "expo-router";
-import { Colors } from "@/constants/Colors";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSession } from "../ctx";
-import { supabase } from "@/db";
-import { StyleSheet } from "react-native";
 
-interface FormData {
+interface SignUpFormValues {
   name: string;
   surname: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
-const Page = () => {
+export default function SignUpScreen() {
   const { signIn } = useSession();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
-    formState: { errors },
     handleSubmit,
-  } = useForm({
+    watch,
+    formState: { errors },
+  } = useForm<SignUpFormValues>({
     defaultValues: {
-      name: "Elvin",
-      surname: "Shahsuvarli",
-      email: "shahsuvarli.elvin@gmail.com",
-      password: "Elvin351",
+      name: "",
+      surname: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async ({ email, password, name, surname }: FormData) => {
-    await supabase.auth
-      .signUp({
-        email,
-        password,
-      })
-      .then(async ({ data }: any) => {
-        const id = data.user?.id;
-        await supabase.from("users").insert([
-          {
-            uid: id,
-            name: name,
-            surname: surname,
-            email: email,
-            people_added: 0,
-            family_members: 0,
-          },
-        ]);
+  const password = watch("password");
 
-        // Store the user's UID in AsyncStorage
-        await AsyncStorage.setItem("family-tree", id);
+  const onSubmit = async ({
+    email,
+    password,
+    name,
+    surname,
+  }: SignUpFormValues) => {
+    setIsSubmitting(true);
 
-        // Sign in the user
-        signIn(id);
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          name: name.trim(),
+          surname: surname.trim(),
+        },
+      },
+    });
 
-        // Show success message
-        Toast.show({
-          type: "success",
-          text1: "Signed in successfully",
-          text2: "Welcome back",
-          position: "bottom",
-        });
+    setIsSubmitting(false);
 
-        // Redirect to the home screen
-        router.replace("../(tabs)/home");
-      })
-      .catch((error) => {
-        // Handle errors
-        Toast.show({
-          type: "error",
-          text1: "Invalid credentials",
-          text2: "Please check your email and password",
-          position: "bottom",
-        });
+    if (error) {
+      Toast.show({
+        type: "error",
+        text1: "Account creation failed",
+        text2: error.message,
+        position: "bottom",
       });
+      return;
+    }
+
+    if (data.session && data.user?.id) {
+      signIn(data.user.id);
+      Toast.show({
+        type: "success",
+        text1: "Account created",
+        text2: "Your family tree is ready.",
+        position: "bottom",
+      });
+      router.replace("/(auth)/(tabs)/home");
+      return;
+    }
+
+    Toast.show({
+      type: "success",
+      text1: "Check your inbox",
+      text2: "Confirm your email, then sign in.",
+      position: "bottom",
+    });
+    router.replace("/(boarding)/sign-in");
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.headerText, { color: Colors.button }]}>Create</Text>
-        <Text style={[styles.headerText, { color: Colors.background }]}>Account!</Text>
-      </View>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "position" : "height"}>
-        <View style={{ flexDirection: "column", gap: 20 }}>
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="person" size={24} color={Colors.button} />
-
-                <TextInput
-                  placeholder="Elvin"
-                  style={styles.input}
-                  onChangeText={onChange}
-                  value={value}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-            )}
-            name="name"
-            rules={{ required: "Name is required" }}
-          />
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="person" size={24} color={Colors.button} />
-
-                <TextInput
-                  placeholder="Surname"
-                  style={styles.input}
-                  onChangeText={onChange}
-                  value={value}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-            )}
-            name="surname"
-            rules={{ required: "Surname is required" }}
-          />
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="mail" size={24} color={Colors.button} />
-
-                <TextInput
-                  placeholder="Email"
-                  style={styles.input}
-                  onChangeText={onChange}
-                  value={value}
-                  autoCapitalize="none"
-                />
-              </View>
-            )}
-            name="email"
-            rules={{ required: "Email is required" }}
-          />
-
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed" size={24} color={Colors.button} />
-
-                <TextInput
-                  placeholder="Password"
-                  style={styles.input}
-                  value={value}
-                  onChangeText={onChange}
-                  autoCapitalize="none"
-                  secureTextEntry={true}
-                  maxLength={20}
-                />
-
-                {errors.email && (
-                  <Text style={{ color: "red" }}>This is required.</Text>
-                )}
-              </View>
-            )}
-            name="password"
-            rules={{ required: true }}
-          />
-        </View>
-        <Link href="/forgot-password" style={styles.forgotPassword}>
-          Forgot password?
-        </Link>
-      </KeyboardAvoidingView>
-
-      <View
-        style={{
-          flexDirection: "column",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-          <MaterialCommunityIcons
-            name="arrow-right"
-            size={20}
-            color="#fff"
-            style={{ marginLeft: 5 }}
-          />
-        </Pressable>
-        <View style={styles.signInContainer}>
-          <Text style={styles.signInText}>Already have an account?</Text>
-          <Link href="/sign-in">
-            <Text style={styles.signInLink}>Sign in</Text>
+    <AuthScaffold
+      eyebrow="Create your account"
+      title="Join Family Tree"
+      subtitle="Set up your private space in a minute."
+      description="Your account will own the people and relationships you add, and nobody else can see them."
+      footer={
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>Already registered?</Text>
+          <Link href="/(boarding)/sign-in" style={styles.footerLink}>
+            Sign in
           </Link>
         </View>
-      </View>
-
-      <Text style={styles.continueText}>or continue with</Text>
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 10,
-          justifyContent: "center",
-        }}
-      >
-        <Pressable
-          style={styles.socialButton}
-          onPress={() => router.push("../(auth)/(tabs)/home")}
-        >
-          <Image
-            source={require("@/assets/images/google.png")}
-            style={styles.socialButtonImage}
+      }
+    >
+      <Controller
+        control={control}
+        name="name"
+        rules={{ required: "First name is required" }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="First name"
+            icon="person-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="Alex"
+            autoCapitalize="words"
+            autoCorrect={false}
+            errorText={errors.name?.message}
           />
-          <Text style={styles.socialButtonText}>Google</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
-  );
-};
+        )}
+      />
 
-export default Page;
+      <Controller
+        control={control}
+        name="surname"
+        rules={{ required: "Surname is required" }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Surname"
+            icon="people-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="Carter"
+            autoCapitalize="words"
+            autoCorrect={false}
+            errorText={errors.surname?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="email"
+        rules={{
+          required: "Email is required",
+          pattern: {
+            value: /\S+@\S+\.\S+/,
+            message: "Enter a valid email address",
+          },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Email"
+            icon="mail-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="you@example.com"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            errorText={errors.email?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="password"
+        rules={{
+          required: "Password is required",
+          minLength: {
+            value: 6,
+            message: "Password must be at least 6 characters",
+          },
+        }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Password"
+            icon="lock-closed-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="Choose a password"
+            autoCapitalize="none"
+            secureTextEntry
+            errorText={errors.password?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="confirmPassword"
+        rules={{
+          required: "Please confirm your password",
+          validate: (value) =>
+            value === password || "Password confirmation does not match",
+        }}
+        render={({ field: { onChange, value } }) => (
+          <FormTextField
+            label="Confirm password"
+            icon="checkmark-circle-outline"
+            value={value}
+            onChangeText={onChange}
+            placeholder="Repeat your password"
+            autoCapitalize="none"
+            secureTextEntry
+            errorText={errors.confirmPassword?.message}
+          />
+        )}
+      />
+
+      <FormButton
+        label={isSubmitting ? "Creating account..." : "Create account"}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
+      />
+    </AuthScaffold>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
-    flexDirection: "column",
-    justifyContent: "space-evenly",
-  },
-  header: {
-    flexDirection: "column",
-    gap: 10,
-  },
-  headerText: {
-    fontWeight: "bold",
-    fontSize: 30,
-  },
-  inputContainer: {
-    gap: 10,
-    backgroundColor: Colors.lightGrey,
+  footerRow: {
     flexDirection: "row",
+    gap: 6,
     alignItems: "center",
-    padding: 10,
-    borderRadius: 5,
-    borderColor: Colors.grey,
-    borderWidth: 1,
-    borderStyle: "solid",
   },
-  input: {
-    fontSize: 17,
-    height: 40,
-    width: "100%",
-  },
-  forgotPassword: {
-    color: Colors.button,
-    textAlign: "right",
-    fontSize: 12,
-    fontWeight: "bold",
-    alignSelf: "flex-end",
-    marginTop: 10,
-  },
-  button: {
-    padding: 10,
-    borderRadius: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.button,
-    width: "100%",
-    height: 50,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 17,
-  },
-  signInContainer: {
-    flexDirection: "row",
-    gap: 5,
-  },
-  signInText: {
-    color: Colors.button,
-  },
-  signInLink: {
-    color: Colors.button,
-    fontWeight: "bold",
-  },
-  continueText: {
-    color: Colors.button,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  socialButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.grey,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    width: "100%",
-  },
-  socialButtonImage: {
-    height: 30,
-    width: 30,
-  },
-  socialButtonText: {
+  footerText: {
     color: Colors.text,
-    fontSize: 20,
+    fontSize: 14,
+  },
+  footerLink: {
+    color: Colors.button,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

@@ -1,8 +1,7 @@
-import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { View, Text, StyleSheet, Image } from "react-native";
 
-const kpis = [
+const statsCards = [
   {
     id: 1,
     image: require("@/assets/images/family-kpi.png"),
@@ -17,7 +16,7 @@ const kpis = [
   },
 ];
 
-const BodyComponent = () => {
+const HomeStats = () => {
   return (
     <View
       style={{
@@ -30,7 +29,7 @@ const BodyComponent = () => {
         marginTop: 10,
       }}
     >
-      {kpis.map((item) => (
+      {statsCards.map((item) => (
         <LinearGradient
           colors={["#FF6100", "#fff"]}
           start={{ x: 1, y: 0 }}
@@ -53,7 +52,7 @@ const BodyComponent = () => {
             style={{ width: 35, height: 35 }}
           />
           <View style={{ flexDirection: "column" }}>
-            <Text style={styles.recentText}>30</Text>
+            <Text style={styles.recentText}>{item.count}</Text>
             <Text style={styles.count}>{item.title}</Text>
           </View>
         </LinearGradient>
@@ -62,7 +61,7 @@ const BodyComponent = () => {
   );
 };
 
-export default BodyComponent;
+export default HomeStats;
 
 const styles = StyleSheet.create({
   count: {

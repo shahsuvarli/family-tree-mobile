@@ -1,8 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 
-const page = () => {
+export default function DashboardScreen() {
   const data = [{ value: 50 }, { value: 80 }, { value: 90 }, { value: 70 }];
+
   return (
     <View>
       <PieChart
@@ -14,8 +15,4 @@ const page = () => {
       />
     </View>
   );
-};
-
-export default page;
-
-const styles = StyleSheet.create({});
+}

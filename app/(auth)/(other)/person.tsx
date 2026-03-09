@@ -1,71 +1,78 @@
 import { View, SectionList, Text, Pressable, StyleSheet } from "react-native";
 import PersonLine from "@/components/PersonLine";
-import { useEffect, useState } from "react";
-import { Colors } from "@/constants/Colors";
+import { useCallback, useEffect } from "react";
+import { colors } from "@/theme/colors";
 import { Ionicons } from "@expo/vector-icons";
-import { useSession } from "@/app/ctx";
-import useFamily from "@/hooks/useFamily";
+import fetchFamilyRelationships from "@/services/family/fetchFamilyRelationships";
 import { router, useLocalSearchParams } from "expo-router";
-import Animated, { useSharedValue } from "react-native-reanimated";
-import { supabase } from "@/db";
-import { PersonType, SectionType } from "@/types";
-import { usePersonStore } from "@/utils/store";
+import { supabase } from "@/lib/supabase/client";
+import { usePersonStore } from "@/store/person-store";
+import type { PersonType, SectionType } from "@/types";
 
-export default function Person() {
+export default function PersonScreen() {
   const { setPerson, setFamilyData, familyData } = usePersonStore();
-  const { id: person_id } = useLocalSearchParams() as { id: string };
-  const { session } = useSession();
+  const { id: personId } = useLocalSearchParams<{ id: string }>();
 
-  const getUserData = async () => {
+  const loadPerson = useCallback(async () => {
+    if (!personId) {
+      return;
+    }
+
     const { data, error } = await supabase
       .from("people")
       .select("id, name, is_favorite")
-      .eq("id", person_id)
+      .eq("id", personId)
       .single();
-
 
     if (!error) {
       const { id, name, is_favorite } = data;
       setPerson({ id, name, is_favorite });
     }
-  }
+  }, [personId, setPerson]);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      const value = await useFamily(session, person_id);
-      setFamilyData(value);
+  const loadFamilyData = useCallback(async () => {
+    if (!personId) {
+      setFamilyData([]);
+      return;
     }
 
-    fetchProfile();
-  }, []);
+    const relationships = await fetchFamilyRelationships(personId);
+    setFamilyData(relationships);
+  }, [personId, setFamilyData]);
 
   useEffect(() => {
-    getUserData();
-  }, []);
+    void loadFamilyData();
+  }, [loadFamilyData]);
 
-  const opacityShareValue = useSharedValue(1);
+  useEffect(() => {
+    void loadPerson();
+  }, [loadPerson]);
 
-  function handlePlusPress(person_id: string, relation_id: string, relation_name: string): void {
+  function handlePlusPress(
+    currentPersonId: string,
+    relationshipCode: SectionType["code"],
+    title: string
+  ): void {
     router.push({
       pathname: "/(auth)/(other)/add-relative",
-      params: { person_id, relation_id, relation_name },
+      params: {
+        person_id: currentPersonId,
+        relationship_code: relationshipCode,
+        title,
+      },
     });
   }
 
-  function handlePerson(item: any) {
+  function handlePerson(item: PersonType) {
     router.replace({
       pathname: "/(auth)/(other)/person",
-      params: { id: item.person_id, name: item.name },
+      params: { id: item.person_id ?? item.id, name: item.name },
     });
-  }
-
-  if (!familyData) {
-    return null;
   }
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { opacity: opacityShareValue }]}>
+      <View style={styles.content}>
         <SectionList
           sections={familyData}
           renderItem={() => {
@@ -73,27 +80,35 @@ export default function Person() {
           }}
           stickySectionHeadersEnabled={false}
           renderSectionHeader={({ section: {
-            relation_name,
+            title,
             data,
-            relation_id,
+            code,
           } }: { section: SectionType }) => {
             const count = data.length;
             return (
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionHeaderTitle}>
-                  <Text style={styles.sectionHeaderText}>{relation_name}</Text>
-                  <Pressable onPress={() => handlePlusPress(person_id, relation_id, relation_name)}>
-                    <Ionicons name="add" size={27} color={Colors.darkGrey} />
+                  <Text style={styles.sectionHeaderText}>{title}</Text>
+                  <Pressable onPress={() => handlePlusPress(personId, code, title)}>
+                    <Ionicons name="add" size={27} color={colors.darkGrey} />
                   </Pressable>
                 </View>
                 <View>
                   {count ? (
                     data.map((item: PersonType) => {
-                      return <PersonLine item={item} key={item.id} handlePerson={handlePerson} icon="chevron-forward" relation_id={relation_id} />;
+                      return (
+                        <PersonLine
+                          item={item}
+                          key={item.id}
+                          handlePerson={handlePerson}
+                          icon="chevron-forward"
+                          sectionCode={code}
+                        />
+                      );
                     })
                   ) : (
                     <Text style={styles.noItemsText}>
-                      &nbsp; no {relation_name.toLowerCase()} found
+                      &nbsp; no {title.toLowerCase()} found
                     </Text>
                   )}
                 </View>
@@ -103,7 +118,7 @@ export default function Person() {
           stickyHeaderHiddenOnScroll={true}
           keyExtractor={(item) => item.id}
         />
-      </Animated.View>
+      </View>
     </View>
   );
 }
@@ -128,10 +143,10 @@ const styles = StyleSheet.create({
   },
   sectionHeaderText: {
     fontSize: 17,
-    color: Colors.darkGrey,
+    color: colors.darkGrey,
   },
   noItemsText: {
-    color: Colors.darkGrey,
+    color: colors.darkGrey,
     fontSize: 15,
     fontStyle: "italic",
   },
