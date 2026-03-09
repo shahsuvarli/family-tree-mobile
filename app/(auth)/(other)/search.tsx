@@ -13,6 +13,7 @@ import { supabase } from "@/db";
 import { useSession } from "@/app/ctx";
 import PersonLine from "@/components/PersonLine";
 import { PersonType } from "@/types";
+import { router } from "expo-router";
 
 const page = () => {
   const [search, setSearch] = useState<string>("");
@@ -40,6 +41,13 @@ const page = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
+  function handlePerson(item: any) {
+    router.replace({
+      pathname: "/(auth)/(other)/person",
+      params: { id: item.id, name: item.name },
+    });
+  }
+
   return (
     <View
       style={{
@@ -63,7 +71,7 @@ const page = () => {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <PersonLine item={item} />}
+        renderItem={({ item }) => <PersonLine item={item} handlePerson={handlePerson} icon="chevron-forward" />}
         refreshing={refreshing}
         onRefresh={() => fetchSearchResults(search)}
         refreshControl={
