@@ -1,4 +1,5 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
 import FormPressableField from "@/components/forms/FormPressableField";
 import FormTextField from "@/components/forms/FormTextField";
 import OptionChip from "@/components/forms/OptionChip";
@@ -7,7 +8,7 @@ import { colors } from "@/theme/colors";
 import type { SelectableOption } from "@/types/ui";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import {
   genderOptions,
   lifeOptions,
@@ -54,6 +55,96 @@ function OptionGroup({ title, name, control, options }: OptionGroupProps) {
         </View>
       )}
     />
+  );
+}
+
+interface DateFieldProps {
+  value?: string;
+  errorText?: string;
+  date?: Date;
+  showCalendar: boolean;
+  onToggleCalendar: () => void;
+  onDateChange: (selectedDate?: Date) => void;
+}
+
+function DateField({
+  value,
+  errorText,
+  date,
+  showCalendar,
+  onToggleCalendar,
+  onDateChange,
+}: DateFieldProps) {
+  if (Platform.OS === "ios") {
+    return (
+      <View style={styles.fieldContainer}>
+        <View style={styles.fieldLabelRow}>
+          <Text style={styles.formLabel}>Date of birth</Text>
+          {errorText ? (
+            <Text style={styles.fieldErrorText}>{errorText}</Text>
+          ) : null}
+        </View>
+
+        <View style={styles.iosDateField}>
+          <Ionicons
+            name="calendar-outline"
+            size={20}
+            color="#0000005a"
+            style={styles.iosDateIcon}
+          />
+          <View pointerEvents="none" style={styles.iosDateValueOverlay}>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.compactPressableValue,
+                !value && styles.datePlaceholder,
+              ]}
+            >
+              {value || "Date of birth"}
+            </Text>
+          </View>
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={date ?? new Date()}
+            onChange={(_event, selectedDate) => {
+              onDateChange(selectedDate);
+            }}
+            mode="date"
+            display="compact"
+            style={styles.iosDatePicker}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.fieldContainer}>
+      <FormPressableField
+        label="Date of birth"
+        icon="calendar-outline"
+        value={value}
+        placeholder="Date of birth"
+        onPress={onToggleCalendar}
+        labelStyle={styles.formLabel}
+        fieldStyle={styles.compactInputRow}
+        valueStyle={styles.compactPressableValue}
+        errorText={errorText}
+      />
+
+      {showCalendar ? (
+        <DateTimePicker
+          testID="dateTimePicker"
+          is24Hour
+          value={date ?? new Date()}
+          onChange={(_event, selectedDate) => {
+            onDateChange(selectedDate);
+          }}
+          mode="date"
+          style={styles.datePicker}
+        />
+      ) : null}
+    </View>
   );
 }
 
@@ -111,51 +202,14 @@ export default function PersonFormFields({
         control={control}
         name="birthDate"
         render={({ field: { value } }) => (
-          <View style={styles.fieldContainer}>
-            <FormPressableField
-              label="Date of birth"
-              icon="calendar-outline"
-              value={value}
-              placeholder="Date of birth"
-              onPress={onToggleCalendar}
-              labelStyle={styles.formLabel}
-              fieldStyle={styles.compactInputRow}
-              valueStyle={styles.compactInput}
-              errorText={errors.birthDate?.message}
-            />
-
-            {showCalendar ? (
-              <View>
-                <DateTimePicker
-                  testID="dateTimePicker"
-                  is24Hour={Platform.OS !== "ios"}
-                  value={date ?? new Date()}
-                  onChange={(_event, selectedDate) => {
-                    onDateChange(selectedDate);
-                  }}
-                  mode="date"
-                  textColor="#fff"
-                  style={styles.datePicker}
-                />
-                {Platform.OS === "ios" ? (
-                  <View style={styles.datePickerButtonsContainer}>
-                    <Pressable
-                      style={styles.datePickerButton}
-                      onPress={onToggleCalendar}
-                    >
-                      <Text style={styles.datePickerButtonText}>Cancel</Text>
-                    </Pressable>
-                    <Pressable
-                      style={styles.datePickerButton}
-                      onPress={onToggleCalendar}
-                    >
-                      <Text style={styles.datePickerButtonText}>Done</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
-          </View>
+          <DateField
+            value={value}
+            errorText={errors.birthDate?.message}
+            date={date}
+            showCalendar={showCalendar}
+            onToggleCalendar={onToggleCalendar}
+            onDateChange={onDateChange}
+          />
         )}
       />
 
@@ -208,6 +262,16 @@ const styles = StyleSheet.create({
   fieldContainer: {
     gap: 8,
   },
+  fieldLabelRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 10,
+  },
+  fieldErrorText: {
+    color: colors.warning,
+    fontSize: 12,
+    fontWeight: "600",
+  },
   formLabel: {
     color: "#000000a6",
     fontSize: 17,
@@ -225,6 +289,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: colors.text,
     minHeight: 45,
+  },
+  compactPressableValue: {
+    fontSize: 17,
+    lineHeight: 22,
+    color: colors.text,
+    includeFontPadding: false,
   },
   compactNotesRow: {
     minHeight: 112,
@@ -250,26 +320,41 @@ const styles = StyleSheet.create({
     gap: 5,
     justifyContent: "space-between",
   },
+  iosDateField: {
+    minHeight: 48,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#0000003d",
+    backgroundColor: "#f8f9fa",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+  iosDateIcon: {
+    position: "absolute",
+    left: 10,
+    zIndex: 1,
+  },
+  iosDateValueOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 12,
+    bottom: 0,
+    left: 42,
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  iosDatePicker: {
+    minHeight: 48,
+    width: "100%",
+    opacity: 0.02,
+  },
+  datePlaceholder: {
+    color: "#0000005a",
+  },
   datePicker: {
     height: 150,
     backgroundColor: "#fff",
     color: "#000",
-  },
-  datePickerButtonsContainer: {
-    flexDirection: "row",
-    gap: 20,
-    justifyContent: "space-between",
-    padding: 10,
-  },
-  datePickerButton: {
-    backgroundColor: "#0a7ea4",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    flex: 1,
-  },
-  datePickerButtonText: {
-    color: "#fff",
-    fontSize: 17,
   },
 });

@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/theme/colors";
 import type { SelectableOption } from "@/types/ui";
 import { Pressable, StyleSheet, Text } from "react-native";
 
@@ -24,11 +25,8 @@ export default function OptionChip({
         <Ionicons
           name={option.icon}
           size={20}
-          color={isSelected ? "#fff" : "#000000a6"}
-          style={[
-            styles.icon,
-            { borderColor: isSelected ? "#fff" : "#000000a6" },
-          ]}
+          color={isSelected ? "#fff" : colors.button}
+          style={styles.icon}
         />
       ) : null}
       <Text style={[styles.label, isSelected && styles.labelSelected]}>
@@ -42,26 +40,27 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     borderStyle: "solid",
     borderWidth: 1,
     borderColor: "#0000003d",
     borderRadius: 5,
     paddingVertical: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     flex: 1,
     backgroundColor: "#fff",
+    gap: 6,
   },
   chipSelected: {
     backgroundColor: "#0a7ea4",
   },
   icon: {
-    borderRadius: 100,
-    paddingRight: 5,
-    borderWidth: 1,
+    flexShrink: 0,
   },
   label: {
-    color: "#000000a6",
+    color: colors.text,
     fontSize: 15,
+    fontWeight: "500",
   },
   labelSelected: {
     color: "#fff",
