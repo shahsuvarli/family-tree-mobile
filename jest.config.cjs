@@ -1,0 +1,8 @@
+module.exports = {
+  preset: "jest-expo",
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/$1",
+  },
+  testPathIgnorePatterns: ["/node_modules/", "/.expo/"],
+  watchman: false,
+};

@@ -26,7 +26,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.grey,
     padding: 20,
-    marginTop: 10,
     gap: 10,
   },
   welcomeTextContainer: {

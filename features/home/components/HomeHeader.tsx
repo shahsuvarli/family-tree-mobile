@@ -1,12 +1,38 @@
 import { Text, Pressable, StyleSheet, View, Image } from "react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
+import { useSession } from "@/app/ctx";
+import { supabase } from "@/lib/supabase/client";
+import { useIsFocused } from "@react-navigation/native";
 
 const HomeHeader = () => {
   const [greeting, setGreeting] = useState("");
+  const [profileName, setProfileName] = useState("");
   const router = useRouter();
+  const { session } = useSession();
+  const isFocused = useIsFocused();
+
+  const fetchProfileName = useCallback(async () => {
+    if (!session) {
+      setProfileName("");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("id", session)
+      .single();
+
+    if (error) {
+      console.error("Failed to load profile name", error.message);
+      return;
+    }
+
+    setProfileName(data.name?.trim() ?? "");
+  }, [session]);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -19,11 +45,20 @@ const HomeHeader = () => {
       setGreeting("Good evening");
     }
   }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      void fetchProfileName();
+    }
+  }, [fetchProfileName, isFocused]);
+
+  const greetingLabel = profileName ? `Hi, ${profileName}!` : "Hi!";
+
   return (
     <>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
+      <View style={styles.topRow}>
         <View style={{ flexDirection: "column", gap: 5 }}>
-          <Text style={styles.greetingText}>Hi, Elvin!</Text>
+          <Text style={styles.greetingText}>{greetingLabel}</Text>
           <Text style={styles.morningText}>{greeting}</Text>
         </View>
         <Image
@@ -53,6 +88,12 @@ const HomeHeader = () => {
 export default HomeHeader;
 
 const styles = StyleSheet.create({
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
   greetingText: {
     fontSize: 33,
     color: colors.button,
@@ -68,7 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey,
     padding: 10,
     paddingHorizontal: 20,
-    marginTop: 10,
     gap: 10,
     borderRadius: 20,
     opacity: 0.3,

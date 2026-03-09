@@ -26,6 +26,7 @@ export default function TabLayout() {
         name="add-new"
         options={{
           title: "Add new person",
+          href: null,
         }}
       />
       <Tabs.Screen

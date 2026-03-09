@@ -2,9 +2,9 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import FormPressableField from "@/components/forms/FormPressableField";
 import FormTextField from "@/components/forms/FormTextField";
 import OptionChip from "@/components/forms/OptionChip";
+import type { PersonFormValues } from "@/features/people/lib/person-form";
 import { colors } from "@/theme/colors";
 import type { SelectableOption } from "@/types/ui";
-import { format } from "date-fns";
 import type { Control, FieldErrors } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -14,15 +14,7 @@ import {
   maritalStatusOptions,
 } from "@/assets/data/new-person.json";
 
-export interface PersonFormValues {
-  name: string;
-  surname: string;
-  birthDate: string;
-  gender: number;
-  maritalStatus: number;
-  life: number;
-  notes: string;
-}
+export type { PersonFormValues } from "@/features/people/lib/person-form";
 
 interface PersonFormFieldsProps {
   control: Control<PersonFormValues>;
@@ -38,18 +30,6 @@ interface OptionGroupProps {
   name: keyof Pick<PersonFormValues, "gender" | "life" | "maritalStatus">;
   control: Control<PersonFormValues>;
   options: SelectableOption[];
-}
-
-export function createPersonFormDefaults(date?: Date): PersonFormValues {
-  return {
-    name: "",
-    surname: "",
-    birthDate: date ? format(date, "dd MMM yyyy") : "",
-    gender: 1,
-    maritalStatus: 1,
-    life: 1,
-    notes: "",
-  };
 }
 
 function OptionGroup({ title, name, control, options }: OptionGroupProps) {
