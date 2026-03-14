@@ -1,21 +1,19 @@
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { router } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export const APP_TAB_BAR_HEIGHT = 56;
-export const APP_TAB_BAR_MARGIN = 16;
-const TAB_ICON_SIZE = 26;
-const ADD_ICON_SIZE = 26;
-const ADD_BUTTON_SIZE = 46;
+export const APP_TAB_BAR_HEIGHT = 72;
+const TAB_ICON_SIZE = 30;
+const ADD_ICON_SIZE = 30;
+const ADD_BUTTON_SIZE = 52;
+const TAB_BAR_VERTICAL_PADDING = 10;
 
 export function AppTabBar({
   state,
   descriptors,
   navigation,
+  insets,
 }: BottomTabBarProps) {
-  const insets = useSafeAreaInsets();
   const primaryColor = "#0891b2";
   const mutedColor = "#737373";
 
@@ -24,7 +22,8 @@ export function AppTabBar({
       style={[
         styles.container,
         {
-          bottom: Math.max(insets.bottom, APP_TAB_BAR_MARGIN),
+          paddingTop: TAB_BAR_VERTICAL_PADDING,
+          paddingBottom: Math.max(insets.bottom, TAB_BAR_VERTICAL_PADDING),
         },
       ]}
     >
@@ -37,11 +36,6 @@ export function AppTabBar({
         }
 
         const onPress = () => {
-          if (route.name === "add-new") {
-            router.push("/(auth)/(other)/add-new");
-            return;
-          }
-
           const event = navigation.emit({
             type: "tabPress",
             target: route.key,
@@ -70,10 +64,7 @@ export function AppTabBar({
             testID={options.tabBarButtonTestID}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={[
-              styles.tabBarItem,
-              route.name === "add-new" && styles.addNewTabBarItem,
-            ]}
+            style={styles.tabBarItem}
             key={route.name}
           >
             {route.name === "add-new" ? (
@@ -105,34 +96,28 @@ export const MyTabBar = AppTabBar;
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
-    left: APP_TAB_BAR_MARGIN,
-    right: APP_TAB_BAR_MARGIN,
     flexDirection: "row",
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
     minHeight: APP_TAB_BAR_HEIGHT,
-    borderRadius: 18,
-    borderCurve: "continuous",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#d4d4d4",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 10,
+      height: -4,
     },
     shadowRadius: 10,
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
+    elevation: 12,
   },
   tabBarItem: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 40,
-  },
-  addNewTabBarItem: {
-    marginTop: -10,
+    minHeight: 52,
   },
   addButton: {
     width: ADD_BUTTON_SIZE,

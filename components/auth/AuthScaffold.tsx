@@ -1,4 +1,4 @@
-import { Colors } from "@/theme/colors";
+import { colors } from "@/theme/colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { ReactNode, useEffect, useState } from "react";
 import {
@@ -144,14 +144,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   eyebrow: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 1.6,
     textTransform: "uppercase",
   },
   title: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 32,
     fontWeight: "800",
   },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   description: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 15,
     lineHeight: 22,
   },

@@ -1,14 +1,22 @@
 import { Pressable, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { Colors } from "@/theme/colors";
-import { usePersonStore } from "@/store/person-store";
+import { appRoutes } from "@/constants/routes";
+import { colors } from "@/theme/colors";
+import { usePersonStore } from "@/features/people/store/usePersonStore";
 
-export default function OtherLayout() {
-  const {
-    person,
-    handleFavorite,
-  } = usePersonStore();
+interface PersonRouteParams {
+  id?: string;
+  name?: string;
+}
+
+interface FavoriteRouteParams {
+  id?: string;
+}
+
+export default function AuthStackLayout() {
+  const { person, handleFavorite } = usePersonStore();
+
   return (
     <Stack>
       <Stack.Screen
@@ -20,48 +28,48 @@ export default function OtherLayout() {
       />
       <Stack.Screen
         name="person"
-        options={({ route }: any) => {
+        options={({ route }: { route: { params?: PersonRouteParams } }) => {
           const displayName = route.params?.name ?? person.name;
+          const personId = person.id ?? route.params?.id;
 
           return {
             headerShown: true,
             headerBackTitleVisible: false,
             title: displayName ? `${displayName}'s family` : "Family",
             headerRight: () => {
-            return (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: 15,
-                }}
-              >
-                <Pressable onPress={handleFavorite}>
-                  <FontAwesome
-                    name={person.is_favorite ? "star" : "star-o"}
-                    size={30}
-                    color={Colors.button}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(auth)/(tabs)/home/edit-person",
-                      params: { person_id: person.id || route.params?.id },
-                    })
-                  }
+              return (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 15,
+                  }}
                 >
-                  <FontAwesome
-                    name="pencil-square-o"
-                    size={27}
-                    color={Colors.button}
-                  />
-                </Pressable>
-              </View>
-            );
+                  <Pressable onPress={handleFavorite}>
+                    <FontAwesome
+                      name={person.is_favorite ? "star" : "star-o"}
+                      size={30}
+                      color={colors.button}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: appRoutes.authTabsHomeEditPerson,
+                        params: { person_id: personId },
+                      })
+                    }
+                  >
+                    <FontAwesome
+                      name="pencil-square-o"
+                      size={27}
+                      color={colors.button}
+                    />
+                  </Pressable>
+                </View>
+              );
             },
-
           };
         }}
       />
@@ -75,7 +83,7 @@ export default function OtherLayout() {
       />
       <Stack.Screen
         name="favorite"
-        options={({ route }: any) => ({
+        options={({ route }: { route: { params?: FavoriteRouteParams } }) => ({
           headerShown: true,
           title: "Favorites",
           headerRight: () => {
@@ -83,15 +91,15 @@ export default function OtherLayout() {
               <Pressable
                 onPress={() =>
                   router.push({
-                    pathname: "/(auth)/(tabs)/home/edit-person",
-                    params: { person_id: route.params.id },
+                    pathname: appRoutes.authTabsHomeEditPerson,
+                    params: { person_id: route.params?.id },
                   })
                 }
               >
                 <FontAwesome
                   name="pencil-square-o"
                   size={25}
-                  color={Colors.button}
+                  color={colors.button}
                 />
               </Pressable>
             );

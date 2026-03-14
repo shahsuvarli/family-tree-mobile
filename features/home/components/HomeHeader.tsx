@@ -1,9 +1,10 @@
 import { Text, Pressable, StyleSheet, View, Image } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { appRoutes } from "@/constants/routes";
 import { colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useIsFocused } from "@react-navigation/native";
 
@@ -69,14 +70,14 @@ const HomeHeader = () => {
             borderRadius: 100,
             opacity: 0.8,
             borderWidth: 1,
-            borderColor: colors.darkerGrey,
+            borderColor: colors.darkGrey,
           }}
         />
       </View>
 
       <Pressable
         style={styles.searchButton}
-        onPress={() => router.push("/(auth)/(other)/search")}
+        onPress={() => router.push(appRoutes.authStackSearch)}
       >
         <Ionicons name="search" size={30} color={colors.button} />
         <Text style={{ color: colors.button, fontSize: 17 }}>My family</Text>
@@ -114,6 +115,6 @@ const styles = StyleSheet.create({
     opacity: 0.3,
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: colors.darkerGrey,
+    borderColor: colors.darkGrey,
   },
 });

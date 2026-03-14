@@ -1,14 +1,15 @@
 import AuthScaffold from "@/components/auth/AuthScaffold";
 import FormButton from "@/components/forms/FormButton";
 import FormTextField from "@/components/forms/FormTextField";
-import { Colors } from "@/theme/colors";
+import { appRoutes } from "@/constants/routes";
+import { colors } from "@/theme/colors";
 import { supabase } from "@/lib/supabase/client";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
-import { useSession } from "../ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 
 interface SignInFormValues {
   email: string;
@@ -63,7 +64,7 @@ export default function SignInScreen() {
       position: "bottom",
     });
 
-    router.replace("/(auth)/(tabs)/home");
+    router.replace(appRoutes.authTabsHome);
   };
 
   return (
@@ -75,7 +76,7 @@ export default function SignInScreen() {
       footer={
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Need an account?</Text>
-          <Link href="/(boarding)/sign-up" style={styles.footerLink}>
+          <Link href={appRoutes.boardingSignUp} style={styles.footerLink}>
             Sign up
           </Link>
         </View>
@@ -130,7 +131,7 @@ export default function SignInScreen() {
         )}
       />
 
-      <Link href="/(boarding)/forgot-password" style={styles.resetLink}>
+      <Link href={appRoutes.boardingForgotPassword} style={styles.resetLink}>
         Forgot your password?
       </Link>
 
@@ -145,7 +146,7 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   resetLink: {
-    color: Colors.button,
+    color: colors.button,
     textAlign: "right",
     fontSize: 13,
     fontWeight: "700",
@@ -156,11 +157,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 14,
   },
   footerLink: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 14,
     fontWeight: "700",
   },

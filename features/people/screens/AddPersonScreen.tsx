@@ -1,6 +1,7 @@
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import FormButton from "@/components/forms/FormButton";
 import PersonFormFields from "@/features/people/components/PersonFormFields";
+import { appRoutes } from "@/constants/routes";
 import {
   buildPersonPayload,
   createPersonFormDefaults,
@@ -15,12 +16,12 @@ import { useForm } from "react-hook-form";
 import {
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function AddPersonScreen() {
@@ -86,13 +87,13 @@ export default function AddPersonScreen() {
     setShowCalendar(false);
     reset(createPersonFormDefaults(nextDate));
     router.replace({
-      pathname: "/(auth)/(other)/person",
+      pathname: appRoutes.authStackPerson,
       params: { id: data.id, name: data.name },
     });
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaView}>
+    <SafeAreaView edges={["top"]} style={styles.safeAreaView}>
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         style={styles.keyboardView}

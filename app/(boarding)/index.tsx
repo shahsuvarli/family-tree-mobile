@@ -1,5 +1,6 @@
 import AuthScaffold from "@/components/auth/AuthScaffold";
-import { Colors } from "@/theme/colors";
+import { appRoutes } from "@/constants/routes";
+import { colors } from "@/theme/colors";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -19,14 +20,14 @@ const BoardingScreen = () => {
       <View style={styles.actions}>
         <Pressable
           style={styles.primaryButton}
-          onPress={() => router.push("/(boarding)/sign-up")}
+          onPress={() => router.push(appRoutes.boardingSignUp)}
         >
           <Text style={styles.primaryButtonText}>Create account</Text>
         </Pressable>
 
         <Pressable
           style={styles.secondaryButton}
-          onPress={() => router.push("/(boarding)/sign-in")}
+          onPress={() => router.push(appRoutes.boardingSignIn)}
         >
           <Text style={styles.secondaryButtonText}>I already have an account</Text>
         </Pressable>
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   primaryButton: {
-    backgroundColor: Colors.button,
+    backgroundColor: colors.button,
     borderRadius: 16,
     minHeight: 54,
     alignItems: "center",
@@ -60,15 +61,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "rgba(47,79,79,0.18)",
-    backgroundColor: Colors.secondaryButton,
+    backgroundColor: colors.secondaryButton,
   },
   secondaryButtonText: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 16,
     fontWeight: "700",
   },
   footerText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 13,
     textAlign: "center",
     lineHeight: 19,

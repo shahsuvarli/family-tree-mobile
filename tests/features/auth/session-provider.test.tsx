@@ -1,4 +1,4 @@
-import SessionProvider, { useSession } from "@/app/ctx";
+import SessionProvider, { useSession } from "@/features/auth/providers/SessionProvider";
 import { supabase } from "@/lib/supabase/client";
 import React from "react";
 import { act, create } from "react-test-renderer";

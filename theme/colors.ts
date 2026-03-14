@@ -19,5 +19,3 @@ export const colors: ColorPalette = {
   female: "#E5518D",
   warning: "#b23b3b",
 };
-
-export const Colors = colors;

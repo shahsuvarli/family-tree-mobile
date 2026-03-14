@@ -1,13 +1,15 @@
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
-import PersonLine from "@/components/PersonLine";
+import { appRoutes } from "@/constants/routes";
+import ScreenState from "@/components/ui/ScreenState";
+import PersonListItem from "@/features/people/components/PersonListItem";
 import { supabase } from "@/lib/supabase/client";
-import type { PersonType } from "@/types";
+import type { Person } from "@/types/person";
 import { router } from "expo-router";
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 
 export default function FavoritesScreen() {
-  const [data, setData] = useState<PersonType[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -15,7 +17,7 @@ export default function FavoritesScreen() {
 
   const fetchData = useCallback(async () => {
     if (!session) {
-      setData([]);
+      setPeople([]);
       setLoading(false);
       return;
     }
@@ -33,9 +35,9 @@ export default function FavoritesScreen() {
     if (peopleError) {
       console.error(peopleError.message);
       setError("Failed to fetch data.");
-      setData([]);
+      setPeople([]);
     } else {
-      setData(people ?? []);
+      setPeople(people ?? []);
     }
 
     setLoading(false);
@@ -51,31 +53,34 @@ export default function FavoritesScreen() {
     void fetchData();
   }, [fetchData]);
 
-  function handlePerson(item: PersonType) {
+  function handlePerson(person: Person) {
     router.replace({
-      pathname: "/(auth)/(other)/person",
-      params: { id: item.id, name: item.name },
+      pathname: appRoutes.authStackPerson,
+      params: { id: person.id, name: person.name },
     });
   }
 
   return (
     <View style={styles.container}>
       {loading && !refreshing ? (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ScreenState message="Loading..." showSpinner style={styles.stateContainer} />
       ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : data.length === 0 ? (
-        <Text style={styles.noDataText}>No favorite people found.</Text>
+        <ScreenState message={error} tone="error" style={styles.stateContainer} />
+      ) : people.length === 0 ? (
+        <ScreenState
+          message="No favorite people found."
+          style={styles.stateContainer}
+        />
       ) : (
         <FlatList
-          data={data}
+          data={people}
           contentContainerStyle={{ padding: 20 }}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <PersonLine
-              item={item}
-              handlePerson={handlePerson}
-              icon="chevron-forward"
+            <PersonListItem
+              person={item}
+              onPress={handlePerson}
+              iconName="chevron-forward"
             />
           )}
           refreshControl={
@@ -91,19 +96,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  loadingText: {
-    fontSize: 18,
-    color: "gray",
-  },
-  errorText: {
-    fontSize: 18,
-    color: "red",
-  },
-  noDataText: {
-    fontSize: 18,
-    color: "gray",
+  stateContainer: {
+    flex: 1,
   },
 });

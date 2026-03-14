@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import { supabase } from "@/lib/supabase/client";
 import { View, Text, StyleSheet, Image } from "react-native";
 
