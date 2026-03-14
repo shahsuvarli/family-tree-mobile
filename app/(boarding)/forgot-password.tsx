@@ -8,7 +8,7 @@ import { Link } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface ResetFormValues {
   email: string;
@@ -29,26 +29,29 @@ export default function ForgotPasswordScreen() {
   const onSubmit = async ({ email }: ResetFormValues) => {
     setIsSubmitting(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim()
+      );
 
-    setIsSubmitting(false);
+      if (error) {
+        showErrorToast("Reset failed", error.message);
+        return;
+      }
 
-    if (error) {
-      Toast.show({
-        type: "error",
-        text1: "Reset failed",
-        text2: error.message,
-        position: "bottom",
-      });
-      return;
+      showSuccessToast(
+        "Reset email sent",
+        "Check your inbox for the reset link."
+      );
+    } catch (error) {
+      console.error("Unexpected reset password error", error);
+      showErrorToast(
+        "Reset failed",
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    Toast.show({
-      type: "success",
-      text1: "Reset email sent",
-      text2: "Check your inbox for the reset link.",
-      position: "bottom",
-    });
   };
 
   return (

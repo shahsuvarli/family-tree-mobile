@@ -156,24 +156,24 @@ as $$
       relationships.is_blood_relation,
       case
         when relationships.relationship_kind = 'parent'
-          and relationships.target_person_id = target_person_id then 'parent'
+          and relationships.target_person_id = $1 then 'parent'
         when relationships.relationship_kind = 'parent'
-          and relationships.source_person_id = target_person_id then 'child'
+          and relationships.source_person_id = $1 then 'child'
         else relationships.relationship_kind
       end as relationship_code,
       case
         when relationships.relationship_kind = 'parent'
-          and relationships.target_person_id = target_person_id then relationships.source_person_id
+          and relationships.target_person_id = $1 then relationships.source_person_id
         when relationships.relationship_kind = 'parent'
-          and relationships.source_person_id = target_person_id then relationships.target_person_id
-        when relationships.source_person_id = target_person_id then relationships.target_person_id
+          and relationships.source_person_id = $1 then relationships.target_person_id
+        when relationships.source_person_id = $1 then relationships.target_person_id
         else relationships.source_person_id
       end as related_person_id
     from public.relationships
     where relationships.profile_id = auth.uid()
       and (
-        relationships.source_person_id = target_person_id
-        or relationships.target_person_id = target_person_id
+        relationships.source_person_id = $1
+        or relationships.target_person_id = $1
       )
   )
   select

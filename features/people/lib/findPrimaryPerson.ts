@@ -8,6 +8,7 @@ interface ProfileRecord {
 interface PersonRecord {
   id: string;
   name: string;
+  surname?: string | null;
 }
 
 export interface PrimaryPersonResult {
@@ -41,12 +42,30 @@ async function findPersonByProfileName(
   return data;
 }
 
+async function findPrimaryPersonById(
+  profileId: string
+): Promise<PersonRecord | null> {
+  const { data, error } = await supabase
+    .from("people")
+    .select("id, name, surname")
+    .eq("id", profileId)
+    .eq("profile_id", profileId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to find primary person by ID", error.message);
+    return null;
+  }
+
+  return data;
+}
+
 async function findFirstProfilePerson(
   profileId: string
 ): Promise<PersonRecord | null> {
   const { data, error } = await supabase
     .from("people")
-    .select("id, name")
+    .select("id, name, surname")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -54,6 +73,34 @@ async function findFirstProfilePerson(
 
   if (error) {
     console.error("Failed to find first profile person", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+async function upsertPrimaryPerson(
+  profileId: string,
+  profile: ProfileRecord
+): Promise<PersonRecord | null> {
+  const { data, error } = await supabase
+    .from("people")
+    .upsert(
+      [
+        {
+          id: profileId,
+          profile_id: profileId,
+          name: profile.name,
+          surname: profile.surname ?? null,
+        },
+      ],
+      { onConflict: "id" }
+    )
+    .select("id, name, surname")
+    .single();
+
+  if (error) {
+    console.error("Failed to upsert primary person", error.message);
     return null;
   }
 
@@ -74,22 +121,38 @@ export default async function findPrimaryPerson(
   }
 
   if (profile) {
+    const primaryPerson = await findPrimaryPersonById(profileId);
+    if (primaryPerson) {
+      const profileSurname = profile.surname ?? null;
+      const personSurname = primaryPerson.surname ?? null;
+
+      if (
+        primaryPerson.name !== profile.name ||
+        personSurname !== profileSurname
+      ) {
+        const syncedPrimaryPerson = await upsertPrimaryPerson(profileId, profile);
+        if (syncedPrimaryPerson) {
+          return syncedPrimaryPerson;
+        }
+      }
+
+      return primaryPerson;
+    }
+
     const matchingPerson = await findPersonByProfileName(profileId, profile);
     if (matchingPerson) {
       return matchingPerson;
+    }
+
+    const createdPrimaryPerson = await upsertPrimaryPerson(profileId, profile);
+    if (createdPrimaryPerson) {
+      return createdPrimaryPerson;
     }
   }
 
   const firstPerson = await findFirstProfilePerson(profileId);
   if (firstPerson) {
     return firstPerson;
-  }
-
-  if (profile) {
-    return {
-      id: profileId,
-      name: profile.name,
-    };
   }
 
   return null;

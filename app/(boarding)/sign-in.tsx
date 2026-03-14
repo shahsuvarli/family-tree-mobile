@@ -8,8 +8,8 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
 import { useSession } from "@/features/auth/providers/SessionProvider";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface SignInFormValues {
   email: string;
@@ -33,38 +33,35 @@ export default function SignInScreen() {
   const onSubmit = async ({ email, password }: SignInFormValues) => {
     setIsSubmitting(true);
 
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-
-    setIsSubmitting(false);
-
-    if (error) {
-      Toast.show({
-        type: "error",
-        text1: "Sign in failed",
-        text2: error.message,
-        position: "bottom",
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
-      return;
+
+      if (error) {
+        showErrorToast("Sign in failed", error.message);
+        return;
+      }
+
+      if (user?.id) {
+        signIn(user.id);
+      }
+
+      showSuccessToast("Signed in", "Your family tree is ready.");
+      router.replace(appRoutes.authTabsHome);
+    } catch (error) {
+      console.error("Unexpected sign-in error", error);
+      showErrorToast(
+        "Sign in failed",
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (user?.id) {
-      signIn(user.id);
-    }
-
-    Toast.show({
-      type: "success",
-      text1: "Signed in",
-      text2: "Your family tree is ready.",
-      position: "bottom",
-    });
-
-    router.replace(appRoutes.authTabsHome);
   };
 
   return (

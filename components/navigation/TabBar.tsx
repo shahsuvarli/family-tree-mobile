@@ -1,12 +1,13 @@
 import { Ionicons, Octicons } from "@expo/vector-icons";
+import { colors } from "@/theme/colors";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export const APP_TAB_BAR_HEIGHT = 72;
-const TAB_ICON_SIZE = 30;
+export const APP_TAB_BAR_HEIGHT = 80;
+const TAB_ICON_SIZE = 24;
 const ADD_ICON_SIZE = 30;
-const ADD_BUTTON_SIZE = 52;
-const TAB_BAR_VERTICAL_PADDING = 10;
+const ADD_BUTTON_SIZE = 54;
+const TAB_BAR_VERTICAL_PADDING = 12;
 
 export function AppTabBar({
   state,
@@ -14,9 +15,6 @@ export function AppTabBar({
   navigation,
   insets,
 }: BottomTabBarProps) {
-  const primaryColor = "#0891b2";
-  const mutedColor = "#737373";
-
   return (
     <View
       style={[
@@ -54,6 +52,13 @@ export function AppTabBar({
           });
         };
 
+        const label =
+          route.name === "home"
+            ? "Home"
+            : route.name === "profile"
+              ? "Profile"
+              : "Add";
+
         return (
           <TouchableOpacity
             accessibilityState={isFocused ? { selected: true } : {}}
@@ -72,18 +77,28 @@ export function AppTabBar({
                 style={[
                   styles.addButton,
                   {
-                    backgroundColor: isFocused ? primaryColor : "#1f9fbd",
+                    backgroundColor: colors.main,
                   },
                 ]}
               >
-                <Ionicons name="add" size={ADD_ICON_SIZE} color="#fff" />
+                <Ionicons name="add" size={ADD_ICON_SIZE} color={colors.onMain} />
               </View>
             ) : (
-              <Octicons
-                name={route.name === "home" ? "home" : "person"}
-                size={TAB_ICON_SIZE}
-                color={isFocused ? primaryColor : mutedColor}
-              />
+              <View style={styles.tabItemInner}>
+                <Octicons
+                  name={route.name === "home" ? "home" : "person"}
+                  size={TAB_ICON_SIZE}
+                  color={isFocused ? colors.mainDark : colors.inkMuted}
+                />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    isFocused && styles.tabLabelActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
         );
@@ -97,19 +112,19 @@ export const MyTabBar = AppTabBar;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 12,
     minHeight: APP_TAB_BAR_HEIGHT,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#d4d4d4",
-    shadowColor: "#000",
+    borderTopWidth: 1,
+    borderTopColor: colors.borderSoft,
+    shadowColor: colors.mainDark,
     shadowOffset: {
       width: 0,
       height: -4,
     },
-    shadowRadius: 10,
+    shadowRadius: 14,
     shadowOpacity: 0.08,
     elevation: 12,
   },
@@ -117,7 +132,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 52,
+    minHeight: 56,
+  },
+  tabItemInner: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  tabLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.inkMuted,
+  },
+  tabLabelActive: {
+    color: colors.mainDark,
   },
   addButton: {
     width: ADD_BUTTON_SIZE,
@@ -125,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: ADD_BUTTON_SIZE / 2,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#0891b2",
+    shadowColor: colors.mainDark,
     shadowOffset: {
       width: 0,
       height: 8,

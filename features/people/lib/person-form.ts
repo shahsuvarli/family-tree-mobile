@@ -4,6 +4,7 @@ export interface PersonFormValues {
   name: string;
   surname: string;
   birthDate: string;
+  birthDateUnknown: boolean;
   gender: number;
   maritalStatus: number;
   life: number;
@@ -26,6 +27,7 @@ export function createPersonFormDefaults(date?: Date): PersonFormValues {
     name: "",
     surname: "",
     birthDate: date ? format(date, "dd MMM yyyy") : "",
+    birthDateUnknown: false,
     gender: 1,
     maritalStatus: 1,
     life: 1,
@@ -41,7 +43,7 @@ export function buildPersonPayload(
   return {
     name: values.name.trim(),
     surname: values.surname.trim(),
-    birth_date: date ?? null,
+    birth_date: values.birthDateUnknown ? null : date ?? null,
     gender: values.gender,
     life: values.life,
     marital_status: values.maritalStatus,

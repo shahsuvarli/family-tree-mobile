@@ -8,8 +8,8 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, Text, View } from "react-native";
-import Toast from "react-native-toast-message";
 import { useSession } from "@/features/auth/providers/SessionProvider";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface SignUpFormValues {
   name: string;
@@ -47,48 +47,44 @@ export default function SignUpScreen() {
   }: SignUpFormValues) => {
     setIsSubmitting(true);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
-          name: name.trim(),
-          surname: surname.trim(),
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            surname: surname.trim(),
+          },
         },
-      },
-    });
-
-    setIsSubmitting(false);
-
-    if (error) {
-      Toast.show({
-        type: "error",
-        text1: "Account creation failed",
-        text2: error.message,
-        position: "bottom",
       });
-      return;
-    }
 
-    if (data.session && data.user?.id) {
-      signIn(data.user.id);
-      Toast.show({
-        type: "success",
-        text1: "Account created",
-        text2: "Your family tree is ready.",
-        position: "bottom",
-      });
-      router.replace(appRoutes.authTabsHome);
-      return;
-    }
+      if (error) {
+        showErrorToast("Account creation failed", error.message);
+        return;
+      }
 
-    Toast.show({
-      type: "success",
-      text1: "Check your inbox",
-      text2: "Confirm your email, then sign in.",
-      position: "bottom",
-    });
-    router.replace(appRoutes.boardingSignIn);
+      if (data.session && data.user?.id) {
+        signIn(data.user.id);
+        showSuccessToast("Account created", "Your family tree is ready.");
+        router.replace(appRoutes.authTabsHome);
+        return;
+      }
+
+      showSuccessToast(
+        "Check your inbox",
+        "Confirm your email, then sign in."
+      );
+      router.replace(appRoutes.boardingSignIn);
+    } catch (error) {
+      console.error("Unexpected sign-up error", error);
+      showErrorToast(
+        "Account creation failed",
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

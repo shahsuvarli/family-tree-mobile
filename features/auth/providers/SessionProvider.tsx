@@ -1,3 +1,4 @@
+import findPrimaryPerson from "@/features/people/lib/findPrimaryPerson";
 import { supabase } from "@/lib/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import {
@@ -9,16 +10,28 @@ import {
   useState,
 } from "react";
 
-const AuthContext = createContext<{
-  signIn: (data?: string | null) => void;
+type AuthContextValue = {
+  /**
+   * Internal canonical identifier for the authenticated user.
+   * Historically exposed as `session`; both fields are kept in sync.
+   */
+  userId: string | null;
+  /**
+   * Backwards-compatible alias for `userId`.
+   * Prefer `userId` in new code.
+   */
+  session: string | null;
+  signIn: (userId?: string | null) => void;
   signOut: () => Promise<void>;
-  session?: string | null;
   isLoading: boolean;
   refreshSession: () => Promise<void>;
-}>({
+};
+
+const AuthContext = createContext<AuthContextValue>({
+  userId: null,
+  session: null,
   signIn: () => null,
   signOut: async () => undefined,
-  session: null,
   isLoading: false,
   refreshSession: async () => undefined,
 });
@@ -36,11 +49,11 @@ export function useSession() {
 }
 
 export default function SessionProvider(props: PropsWithChildren) {
-  const [session, setSession] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const syncSession = useCallback((authSession: Session | null) => {
-    setSession(authSession?.user?.id ?? null);
+    setUserId(authSession?.user?.id ?? null);
     setIsLoading(false);
   }, []);
 
@@ -49,7 +62,7 @@ export default function SessionProvider(props: PropsWithChildren) {
 
     if (error) {
       console.error("Failed to refresh Supabase session", error.message);
-      setSession(null);
+      setUserId(null);
       setIsLoading(false);
       return;
     }
@@ -69,7 +82,7 @@ export default function SessionProvider(props: PropsWithChildren) {
 
         if (error) {
           console.error("Failed to load Supabase session", error.message);
-          setSession(null);
+          setUserId(null);
           setIsLoading(false);
           return;
         }
@@ -82,7 +95,7 @@ export default function SessionProvider(props: PropsWithChildren) {
         }
 
         console.error("Unexpected Supabase session error", error);
-        setSession(null);
+        setUserId(null);
         setIsLoading(false);
       });
 
@@ -102,11 +115,21 @@ export default function SessionProvider(props: PropsWithChildren) {
     };
   }, [syncSession]);
 
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
+    void findPrimaryPerson(userId);
+  }, [userId]);
+
   return (
     <AuthContext.Provider
       value={{
-        signIn: (data) => {
-          setSession(data ?? null);
+        userId,
+        session: userId,
+        signIn: (nextUserId) => {
+          setUserId(nextUserId ?? null);
           setIsLoading(false);
         },
         signOut: async () => {
@@ -114,10 +137,9 @@ export default function SessionProvider(props: PropsWithChildren) {
           if (error) {
             console.error("Failed to sign out", error.message);
           }
-          setSession(null);
+          setUserId(null);
           setIsLoading(false);
         },
-        session,
         isLoading,
         refreshSession,
       }}

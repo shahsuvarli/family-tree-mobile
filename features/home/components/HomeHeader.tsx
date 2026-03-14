@@ -1,31 +1,28 @@
-import { Text, Pressable, StyleSheet, View, Image } from "react-native";
+import { Text, Pressable, StyleSheet, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { appRoutes } from "@/constants/routes";
 import { colors } from "@/theme/colors";
 import { useRouter } from "expo-router";
 import { useSession } from "@/features/auth/providers/SessionProvider";
-import { supabase } from "@/lib/supabase/client";
+import { fetchProfile } from "@/features/profile/services/profileService";
 import { useIsFocused } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const HomeHeader = () => {
   const [greeting, setGreeting] = useState("");
   const [profileName, setProfileName] = useState("");
   const router = useRouter();
-  const { session } = useSession();
+  const { userId } = useSession();
   const isFocused = useIsFocused();
 
   const fetchProfileName = useCallback(async () => {
-    if (!session) {
+    if (!userId) {
       setProfileName("");
       return;
     }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("name")
-      .eq("id", session)
-      .single();
+    const { data, error } = await fetchProfile(userId);
 
     if (error) {
       console.error("Failed to load profile name", error.message);
@@ -33,7 +30,7 @@ const HomeHeader = () => {
     }
 
     setProfileName(data.name?.trim() ?? "");
-  }, [session]);
+  }, [userId]);
 
   useEffect(() => {
     const currentHour = new Date().getHours();
@@ -57,30 +54,37 @@ const HomeHeader = () => {
 
   return (
     <>
-      <View style={styles.topRow}>
-        <View style={{ flexDirection: "column", gap: 5 }}>
-          <Text style={styles.greetingText}>{greetingLabel}</Text>
-          <Text style={styles.morningText}>{greeting}</Text>
+      <LinearGradient
+        colors={[colors.main, colors.mainDark]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.heroCard}
+      >
+        <View style={styles.topRow}>
+          <View style={styles.greetingBlock}>
+            <Text style={styles.greetingText}>{greetingLabel}</Text>
+            <Text style={styles.morningText}>{greeting}</Text>
+          </View>
+          <View style={styles.avatarShell}>
+            <Text style={styles.avatarText}>
+              {(profileName || "FT").slice(0, 2).toUpperCase()}
+            </Text>
+          </View>
         </View>
-        <Image
-          source={require("@/assets/images/avatar.png")}
-          style={{
-            width: 65,
-            height: 65,
-            borderRadius: 100,
-            opacity: 0.8,
-            borderWidth: 1,
-            borderColor: colors.darkGrey,
-          }}
-        />
-      </View>
+      </LinearGradient>
 
       <Pressable
         style={styles.searchButton}
         onPress={() => router.push(appRoutes.authStackSearch)}
       >
-        <Ionicons name="search" size={30} color={colors.button} />
-        <Text style={{ color: colors.button, fontSize: 17 }}>My family</Text>
+        <View style={styles.searchIconWrap}>
+          <Ionicons name="search" size={18} color={colors.mainDark} />
+        </View>
+        <View style={styles.searchTextBlock}>
+          <Text style={styles.searchLabel}>My family</Text>
+          <Text style={styles.searchHint}>Search people and open profiles</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.mainDark} />
       </Pressable>
     </>
   );
@@ -89,32 +93,80 @@ const HomeHeader = () => {
 export default HomeHeader;
 
 const styles = StyleSheet.create({
+  heroCard: {
+    borderRadius: 24,
+    padding: 16,
+    shadowColor: colors.mainDark,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    elevation: 5,
+  },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 4,
+  },
+  greetingBlock: {
+    gap: 4,
+    flex: 1,
   },
   greetingText: {
-    fontSize: 33,
-    color: colors.button,
-    fontWeight: "bold",
+    fontSize: 28,
+    color: colors.onMain,
+    fontWeight: "800",
   },
   morningText: {
-    fontSize: 17,
-    color: colors.darkGrey,
+    fontSize: 15,
+    color: "rgba(255,249,244,0.84)",
+  },
+  avatarShell: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+  },
+  avatarText: {
+    color: colors.onMain,
+    fontSize: 18,
+    fontWeight: "800",
   },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.grey,
-    padding: 10,
-    paddingHorizontal: 20,
-    gap: 10,
+    backgroundColor: colors.surface,
+    padding: 14,
+    gap: 12,
     borderRadius: 20,
-    opacity: 0.3,
-    borderStyle: "solid",
     borderWidth: 1,
-    borderColor: colors.darkGrey,
+    borderColor: colors.borderWarm,
+  },
+  searchIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.mainSoft,
+  },
+  searchTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  searchLabel: {
+    color: colors.ink,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  searchHint: {
+    color: colors.inkMuted,
+    fontSize: 13,
   },
 });
