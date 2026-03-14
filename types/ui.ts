@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { LinearGradientProps } from "expo-linear-gradient";
 import type { ImageSourcePropType } from "react-native";
+import type { AppRoutePath } from "@/constants/routes";
 
 export type ColorPalette = Record<string, string>;
 
@@ -9,7 +10,7 @@ export interface DashboardCard {
   title: string;
   colors: LinearGradientProps["colors"];
   image: ImageSourcePropType;
-  route: string;
+  route: AppRoutePath;
 }
 
 export interface SelectableOption {

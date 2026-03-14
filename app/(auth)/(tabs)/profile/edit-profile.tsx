@@ -1,4 +1,4 @@
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import FormButton from "@/components/forms/FormButton";
 import FormTextField from "@/components/forms/FormTextField";
 import { supabase } from "@/lib/supabase/client";

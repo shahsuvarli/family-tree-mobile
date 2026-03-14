@@ -1,29 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router, Stack } from "expo-router";
-import { ActivityIndicator, Pressable, View } from "react-native";
-import { useSession } from "../ctx";
-import { Colors } from "@/theme/colors";
+import { Pressable } from "react-native";
+import FullscreenLoader from "@/components/ui/FullscreenLoader";
+import { appRoutes } from "@/constants/routes";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 
 const AuthLayout = () => {
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#fff",
-        }}
-      >
-        <ActivityIndicator size="large" color={Colors.button} />
-      </View>
-    );
+    return <FullscreenLoader />;
   }
 
   if (session) {
-    return <Redirect href="/(auth)/(tabs)/home" />;
+    return <Redirect href={appRoutes.authTabsHome} />;
   }
 
   return (

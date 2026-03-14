@@ -1,4 +1,4 @@
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import FormButton from "@/components/forms/FormButton";
 import PersonFormFields from "@/features/people/components/PersonFormFields";
 import {

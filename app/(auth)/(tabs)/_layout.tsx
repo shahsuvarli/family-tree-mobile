@@ -5,7 +5,12 @@ import { Tabs } from "expo-router";
 
 export default function TabLayout() {
   return (
-    <Tabs tabBar={(props) => <AppTabBar {...props} />}>
+    <Tabs
+      screenOptions={{
+        tabBarHideOnKeyboard: false,
+      }}
+      tabBar={(props) => <AppTabBar {...props} />}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -25,7 +30,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-new"
         options={{
-          href: null,
           headerShown: false,
           tabBarAccessibilityLabel: "Add new person",
         }}

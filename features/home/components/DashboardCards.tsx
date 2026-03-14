@@ -8,10 +8,11 @@ import {
 } from "react-native";
 import { RelativePathString, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { appRoutes } from "@/constants/routes";
 import { dashboardCards } from "@/features/home/data/dashboard-cards";
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import type { DashboardCard } from "@/types/ui";
-import findPrimaryPerson from "@/services/people/findPrimaryPerson";
+import findPrimaryPerson from "@/features/people/lib/findPrimaryPerson";
 
 const CARD_GAP = 12;
 const HOME_HORIZONTAL_PADDING = 16;
@@ -26,7 +27,7 @@ const DashboardCards = () => {
       return;
     }
 
-    if (item.route === "/(auth)/(other)/person") {
+    if (item.route === appRoutes.authStackPerson) {
       const person = await findPrimaryPerson(session);
 
       router.push({

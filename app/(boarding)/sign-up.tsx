@@ -1,14 +1,15 @@
 import AuthScaffold from "@/components/auth/AuthScaffold";
 import FormButton from "@/components/forms/FormButton";
 import FormTextField from "@/components/forms/FormTextField";
-import { Colors } from "@/theme/colors";
+import { appRoutes } from "@/constants/routes";
+import { colors } from "@/theme/colors";
 import { supabase } from "@/lib/supabase/client";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { StyleSheet, Text, View } from "react-native";
 import Toast from "react-native-toast-message";
-import { useSession } from "../ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 
 interface SignUpFormValues {
   name: string;
@@ -77,7 +78,7 @@ export default function SignUpScreen() {
         text2: "Your family tree is ready.",
         position: "bottom",
       });
-      router.replace("/(auth)/(tabs)/home");
+      router.replace(appRoutes.authTabsHome);
       return;
     }
 
@@ -87,7 +88,7 @@ export default function SignUpScreen() {
       text2: "Confirm your email, then sign in.",
       position: "bottom",
     });
-    router.replace("/(boarding)/sign-in");
+    router.replace(appRoutes.boardingSignIn);
   };
 
   return (
@@ -99,7 +100,7 @@ export default function SignUpScreen() {
       footer={
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Already registered?</Text>
-          <Link href="/(boarding)/sign-in" style={styles.footerLink}>
+          <Link href={appRoutes.boardingSignIn} style={styles.footerLink}>
             Sign in
           </Link>
         </View>
@@ -228,11 +229,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 14,
   },
   footerLink: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 14,
     fontWeight: "700",
   },

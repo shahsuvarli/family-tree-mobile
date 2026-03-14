@@ -1,7 +1,8 @@
 import AuthScaffold from "@/components/auth/AuthScaffold";
 import FormButton from "@/components/forms/FormButton";
 import FormTextField from "@/components/forms/FormTextField";
-import { Colors } from "@/theme/colors";
+import { appRoutes } from "@/constants/routes";
+import { colors } from "@/theme/colors";
 import { supabase } from "@/lib/supabase/client";
 import { Link } from "expo-router";
 import { useState } from "react";
@@ -59,7 +60,7 @@ export default function ForgotPasswordScreen() {
       footer={
         <View style={styles.footerRow}>
           <Text style={styles.footerText}>Remembered it?</Text>
-          <Link href="/(boarding)/sign-in" style={styles.footerLink}>
+          <Link href={appRoutes.boardingSignIn} style={styles.footerLink}>
             Back to sign in
           </Link>
         </View>
@@ -106,11 +107,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   footerText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 14,
   },
   footerLink: {
-    color: Colors.button,
+    color: colors.button,
     fontSize: 14,
     fontWeight: "700",
   },

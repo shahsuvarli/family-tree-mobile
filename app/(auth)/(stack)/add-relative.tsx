@@ -1,11 +1,12 @@
-import { useSession } from "@/app/ctx";
-import PersonLine from "@/components/PersonLine";
+import { useSession } from "@/features/auth/providers/SessionProvider";
+import ScreenState from "@/components/ui/ScreenState";
+import PersonListItem from "@/features/people/components/PersonListItem";
 import { buildRelationshipPayload, RelationshipCode } from "@/constants/relationships";
-import fetchFamilyRelationships from "@/services/family/fetchFamilyRelationships";
+import fetchFamilyRelationships from "@/features/people/lib/fetchFamilyRelationships";
 import { supabase } from "@/lib/supabase/client";
-import { usePersonStore } from "@/store/person-store";
+import { usePersonStore } from "@/features/people/store/usePersonStore";
 import { colors } from "@/theme/colors";
-import type { PersonType } from "@/types";
+import type { Person } from "@/types/person";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -13,7 +14,7 @@ import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function AddRelativeScreen() {
-  const [people, setPeople] = useState<PersonType[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -80,7 +81,7 @@ export default function AddRelativeScreen() {
   }, [fetchPeople, search]);
 
   const handleAddPerson = useCallback(
-    async (item: PersonType) => {
+    async (person: Person) => {
       if (!session || !personId) {
         return;
       }
@@ -88,7 +89,7 @@ export default function AddRelativeScreen() {
       const payload = buildRelationshipPayload(
         relationshipCode,
         personId,
-        item.id,
+        person.id,
         session
       );
       const { error: relationshipError } = await supabase
@@ -139,18 +140,22 @@ export default function AddRelativeScreen() {
 
       <View style={styles.container}>
         {loading ? (
-          <Text style={styles.loadingText}>Loading...</Text>
+          <ScreenState message="Loading..." showSpinner style={styles.stateContainer} />
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <ScreenState message={error} tone="error" style={styles.stateContainer} />
         ) : people.length === 0 ? (
-          <Text style={styles.noDataText}>No data available.</Text>
+          <ScreenState message="No data available." style={styles.stateContainer} />
         ) : (
           <FlatList
             data={people}
             contentContainerStyle={styles.listContent}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <PersonLine item={item} handlePerson={handleAddPerson} icon="add" />
+              <PersonListItem
+                person={item}
+                onPress={handleAddPerson}
+                iconName="add"
+              />
             )}
           />
         )}
@@ -168,23 +173,14 @@ const styles = StyleSheet.create({
     color: "gray",
   },
   container: {
+    flex: 1,
     justifyContent: "center",
-    alignItems: "center",
   },
   listContent: {
     paddingVertical: 20,
   },
-  loadingText: {
-    fontSize: 18,
-    color: "gray",
-  },
-  errorText: {
-    fontSize: 18,
-    color: "red",
-  },
-  noDataText: {
-    fontSize: 18,
-    color: "gray",
+  stateContainer: {
+    flex: 1,
   },
   textInput: {
     flex: 1,

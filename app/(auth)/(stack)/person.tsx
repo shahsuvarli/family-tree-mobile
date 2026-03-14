@@ -1,13 +1,14 @@
 import { View, SectionList, Text, Pressable, StyleSheet } from "react-native";
-import PersonLine from "@/components/PersonLine";
+import { appRoutes } from "@/constants/routes";
+import PersonListItem from "@/features/people/components/PersonListItem";
 import { useCallback, useEffect } from "react";
 import { colors } from "@/theme/colors";
 import { Ionicons } from "@expo/vector-icons";
-import fetchFamilyRelationships from "@/services/family/fetchFamilyRelationships";
+import fetchFamilyRelationships from "@/features/people/lib/fetchFamilyRelationships";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase/client";
-import { usePersonStore } from "@/store/person-store";
-import type { PersonType, SectionType } from "@/types";
+import { usePersonStore } from "@/features/people/store/usePersonStore";
+import type { Person, RelationshipSectionData } from "@/types/person";
 
 export default function PersonScreen() {
   const { setPerson, setFamilyData, familyData } = usePersonStore();
@@ -50,11 +51,11 @@ export default function PersonScreen() {
 
   function handlePlusPress(
     currentPersonId: string,
-    relationshipCode: SectionType["code"],
+    relationshipCode: RelationshipSectionData["code"],
     title: string
   ): void {
     router.push({
-      pathname: "/(auth)/(other)/add-relative",
+      pathname: appRoutes.authStackAddRelative,
       params: {
         person_id: currentPersonId,
         relationship_code: relationshipCode,
@@ -63,10 +64,10 @@ export default function PersonScreen() {
     });
   }
 
-  function handlePerson(item: PersonType) {
+  function handlePerson(person: Person) {
     router.replace({
-      pathname: "/(auth)/(other)/person",
-      params: { id: item.person_id ?? item.id, name: item.name },
+      pathname: appRoutes.authStackPerson,
+      params: { id: person.person_id ?? person.id, name: person.name },
     });
   }
 
@@ -83,7 +84,7 @@ export default function PersonScreen() {
             title,
             data,
             code,
-          } }: { section: SectionType }) => {
+          } }: { section: RelationshipSectionData }) => {
             const count = data.length;
             return (
               <View style={styles.sectionHeader}>
@@ -95,14 +96,14 @@ export default function PersonScreen() {
                 </View>
                 <View>
                   {count ? (
-                    data.map((item: PersonType) => {
+                    data.map((person: Person) => {
                       return (
-                        <PersonLine
-                          item={item}
-                          key={item.id}
-                          handlePerson={handlePerson}
-                          icon="chevron-forward"
-                          sectionCode={code}
+                        <PersonListItem
+                          person={person}
+                          key={person.id}
+                          onPress={handlePerson}
+                          iconName="chevron-forward"
+                          relationshipCode={code}
                         />
                       );
                     })

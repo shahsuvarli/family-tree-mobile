@@ -4,10 +4,6 @@ import DashboardCards from "@/features/home/components/DashboardCards";
 import WelcomeCard from "@/features/home/components/WelcomeCard";
 import HomeHeader from "@/features/home/components/HomeHeader";
 import HomeStats from "@/features/home/components/HomeStats";
-import {
-  APP_TAB_BAR_HEIGHT,
-  APP_TAB_BAR_MARGIN,
-} from "@/components/navigation/TabBar";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -19,8 +15,7 @@ export default function HomeScreen() {
         styles.content,
         {
           paddingTop: insets.top + 16,
-          paddingBottom:
-            APP_TAB_BAR_HEIGHT + Math.max(insets.bottom, APP_TAB_BAR_MARGIN) + 24,
+          paddingBottom: 24,
         },
       ]}
       showsVerticalScrollIndicator={false}

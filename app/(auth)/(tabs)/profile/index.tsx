@@ -3,20 +3,21 @@ import {
   Text,
   Image,
   FlatList,
-  ActivityIndicator,
   Pressable,
   StyleSheet,
 } from "react-native";
+import FullscreenLoader from "@/components/ui/FullscreenLoader";
 import { useCallback, useEffect, useState } from "react";
+import { appRoutes } from "@/constants/routes";
 import { colors } from "@/theme/colors";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "@/lib/supabase/client";
 import { useIsFocused } from "@react-navigation/native";
-import { useSession } from "@/app/ctx";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import { format } from "date-fns";
 import { router } from "expo-router";
 
-interface UserType {
+interface ProfileOverview {
   name: string;
   surname: string;
   email: string;
@@ -26,8 +27,8 @@ interface UserType {
 }
 
 export default function ProfileScreen() {
-  const [user, setUser] = useState<UserType>();
-  const image = "https://avatars.githubusercontent.com/u/46631807?v=4";
+  const [profile, setProfile] = useState<ProfileOverview>();
+  const profileImageUri = "https://avatars.githubusercontent.com/u/46631807?v=4";
   const isFocused = useIsFocused();
   const { session } = useSession();
 
@@ -44,7 +45,7 @@ export default function ProfileScreen() {
         .single();
 
       if (!error) {
-        setUser({
+        setProfile({
           ...data,
           created_at: format(new Date(data.created_at), "dd/MM/yyyy"),
         });
@@ -60,14 +61,8 @@ export default function ProfileScreen() {
     }
   }, [fetchProfileOverview, isFocused]);
 
-  if (!user) {
-    return (
-      <ActivityIndicator
-        size="large"
-        color={colors.button}
-        style={styles.activityIndicator}
-      />
-    );
+  if (!profile) {
+    return <FullscreenLoader />;
   }
 
   return (
@@ -79,17 +74,17 @@ export default function ProfileScreen() {
             <View style={styles.imageContainer}>
               <Image
                 source={{
-                  uri: image,
+                  uri: profileImageUri,
                 }}
                 style={styles.image}
               />
             </View>
             <View style={styles.userInfoContainer}>
               <Text style={styles.userName}>
-                {user.name} {user.surname}
+                {profile.name} {profile.surname}
               </Text>
               <Text style={styles.userJoinDate}>
-                joined on {user.created_at}
+                joined on {profile.created_at}
               </Text>
             </View>
           </View>
@@ -100,7 +95,7 @@ export default function ProfileScreen() {
                 size={30}
                 color="#808080"
               />
-              <Text style={styles.userEmail}>{user.email}</Text>
+              <Text style={styles.userEmail}>{profile.email}</Text>
             </View>
           </View>
         </View>
@@ -108,11 +103,11 @@ export default function ProfileScreen() {
         {/* Cards view */}
         <View style={styles.cardsContainer}>
           <View style={styles.cardItemContainer}>
-            <Text style={styles.cardTitle}>{user.people_count}</Text>
+            <Text style={styles.cardTitle}>{profile.people_count}</Text>
             <Text style={styles.cardSubtitle}>people added</Text>
           </View>
           <View style={styles.cardItemContainer}>
-            <Text style={styles.cardTitle}>{user.relationship_count}</Text>
+            <Text style={styles.cardTitle}>{profile.relationship_count}</Text>
             <Text style={styles.cardSubtitle}>relationships</Text>
           </View>
         </View>
@@ -125,7 +120,7 @@ export default function ProfileScreen() {
             data={[{ id: 1, name: "Recently added" }]}
             renderItem={({ item }) => (
               <Pressable
-                onPress={() => router.push("/(auth)/(other)/recently-added")}
+                onPress={() => router.push(appRoutes.authStackRecentlyAdded)}
                 style={styles.listItem}
               >
                 <Text style={styles.listItemText}>{item.name}</Text>
@@ -145,9 +140,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  activityIndicator: {
     flex: 1,
   },
   headerContainer: {

@@ -2,29 +2,30 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
+import { appRoutes } from "@/constants/routes";
+import ScreenState from "@/components/ui/ScreenState";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 import { supabase } from "@/lib/supabase/client";
-import { useSession } from "@/app/ctx";
-import PersonLine from "@/components/PersonLine";
-import type { PersonType } from "@/types";
+import { useSession } from "@/features/auth/providers/SessionProvider";
+import PersonListItem from "@/features/people/components/PersonListItem";
+import type { Person } from "@/types/person";
 import { router } from "expo-router";
 
 export default function SearchPeopleScreen() {
-  const [search, setSearch] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
   const { session } = useSession();
-  const [data, setData] = useState<PersonType[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchSearchResults = useCallback(
     async (searchText: string) => {
       if (!session) {
-        setData([]);
+        setPeople([]);
         setRefreshing(false);
         return;
       }
@@ -38,7 +39,7 @@ export default function SearchPeopleScreen() {
         .order("created_at", { ascending: false })
         .or(`name.ilike.%${searchText}%,surname.ilike.%${searchText}%`);
 
-      setData(people ?? []);
+      setPeople(people ?? []);
       setRefreshing(false);
     },
     [session]
@@ -46,61 +47,56 @@ export default function SearchPeopleScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      void fetchSearchResults(search);
+      void fetchSearchResults(searchText);
     }, 500);
     return () => clearTimeout(timer);
-  }, [fetchSearchResults, search]);
+  }, [fetchSearchResults, searchText]);
 
-  function handlePerson(item: PersonType) {
+  function handlePerson(person: Person) {
     router.replace({
-      pathname: "/(auth)/(other)/person",
-      params: { id: item.id, name: item.name },
+      pathname: appRoutes.authStackPerson,
+      params: { id: person.id, name: person.name },
     });
   }
 
   return (
-    <View
-      style={{
-        padding: 15,
-        flexDirection: "column",
-        gap: 15,
-        backgroundColor: "#fff",
-        flex: 1,
-      }}
-    >
+    <View style={styles.container}>
       <View style={styles.searchButton}>
         <Ionicons name="search" size={30} color={colors.button} />
         <TextInput
           style={styles.searchInput}
-          value={search}
-          onChangeText={(text) => setSearch(text)}
+          value={searchText}
+          onChangeText={setSearchText}
           autoFocus
           keyboardAppearance="light"
         />
       </View>
       <FlatList
-        data={data}
+        data={people}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PersonLine
-            item={item}
-            handlePerson={handlePerson}
-            icon="chevron-forward"
+          <PersonListItem
+            person={item}
+            onPress={handlePerson}
+            iconName="chevron-forward"
           />
         )}
         refreshing={refreshing}
-        onRefresh={() => void fetchSearchResults(search)}
+        onRefresh={() => void fetchSearchResults(searchText)}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void fetchSearchResults(search)}
+            onRefresh={() => void fetchSearchResults(searchText)}
           />
         }
         ListEmptyComponent={() => (
-          <View style={{ alignItems: "center", padding: 20 }}>
-            <Ionicons name="search" size={100} color={colors.button} />
-            <Text style={{ color: colors.button }}>No results found</Text>
-          </View>
+          <ScreenState
+            message="No results found"
+            tone="accent"
+            iconName="search"
+            iconSize={100}
+            style={styles.emptyState}
+          />
         )}
       />
     </View>
@@ -108,6 +104,13 @@ export default function SearchPeopleScreen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 15,
+    flexDirection: "column",
+    gap: 15,
+    backgroundColor: "#fff",
+    flex: 1,
+  },
   searchButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: colors.darkerGrey,
+    borderColor: colors.darkGrey,
   },
   searchInput: {
     flex: 1,
@@ -124,5 +127,8 @@ const styles = StyleSheet.create({
     padding: 5,
     color: colors.button,
     paddingVertical: 15,
+  },
+  emptyState: {
+    flexGrow: 1,
   },
 });
