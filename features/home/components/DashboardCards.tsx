@@ -13,6 +13,8 @@ import { dashboardCards } from "@/features/home/data/dashboard-cards";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import type { DashboardCard } from "@/types/ui";
 import findPrimaryPerson from "@/features/people/lib/findPrimaryPerson";
+import { showErrorToast } from "@/lib/toast";
+import { colors } from "@/theme/colors";
 
 const CARD_GAP = 12;
 const HOME_HORIZONTAL_PADDING = 16;
@@ -30,11 +32,19 @@ const DashboardCards = () => {
     if (item.route === appRoutes.authStackPerson) {
       const person = await findPrimaryPerson(session);
 
+      if (!person) {
+        showErrorToast(
+          "Family unavailable",
+          "We couldn't load your main family person. Please try again."
+        );
+        return;
+      }
+
       router.push({
         pathname: item.route as RelativePathString,
         params: {
-          id: person?.id ?? session,
-          name: person?.name ?? "",
+          id: person.id,
+          name: person.name,
         },
       });
       return;
@@ -58,10 +68,12 @@ const DashboardCards = () => {
             colors={item.colors}
             style={styles.gridItem}
             start={{ x: 0, y: 0 }}
-            end={{ x: 2, y: -2 }}
+            end={{ x: 1, y: 1 }}
           >
             <View style={styles.gridItemTop}>
-              <Image source={item.image} style={styles.gridItemImage} />
+              <View style={styles.gridItemIconWrap}>
+                <Image source={item.image} style={styles.gridItemImage} />
+              </View>
             </View>
             <View style={styles.gridItemBottom}>
               <Text style={styles.gridItemText}>{item.title}</Text>
@@ -89,31 +101,41 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     flexDirection: "column",
-    padding: 10,
-    borderRadius: 20,
-    height: 110,
-    gap: 10,
+    padding: 14,
+    borderRadius: 24,
+    minHeight: 128,
+    gap: 12,
     width: "100%",
   },
 
   gridItemTop: {
     justifyContent: "flex-start",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     flexDirection: "column",
   },
   gridItemBottom: {
     flex: 1,
     justifyContent: "flex-end",
     alignItems: "flex-start",
-    paddingLeft: 7,
+  },
+  gridItemIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.16)",
   },
   gridItemImage: {
-    width: 50,
-    height: 50,
+    width: 24,
+    height: 24,
+    tintColor: colors.onMain,
   },
   gridItemText: {
-    color: "#fff",
-    fontSize: 20,
+    color: colors.onMain,
+    fontSize: 19,
     fontWeight: "700",
   },
 });

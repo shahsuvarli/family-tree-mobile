@@ -18,14 +18,18 @@ export default function OptionChip({
 
   return (
     <Pressable
-      style={[styles.chip, isSelected && styles.chipSelected]}
+      style={({ pressed }) => [
+        styles.chip,
+        isSelected && styles.chipSelected,
+        pressed && styles.chipPressed,
+      ]}
       onPress={() => onChange(option.id)}
     >
       {option.icon ? (
         <Ionicons
           name={option.icon}
           size={20}
-          color={isSelected ? "#fff" : colors.button}
+          color={isSelected ? colors.onMain : colors.mainDark}
           style={styles.icon}
         />
       ) : null}
@@ -41,29 +45,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    borderStyle: "solid",
     borderWidth: 1,
-    borderColor: "#0000003d",
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    flex: 1,
-    backgroundColor: "#fff",
+    borderColor: colors.borderSoft,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexGrow: 1,
+    flexBasis: "31%",
+    backgroundColor: colors.surfaceAlt,
     gap: 6,
+    minHeight: 56,
   },
   chipSelected: {
-    backgroundColor: "#0a7ea4",
+    backgroundColor: colors.main,
+    borderColor: colors.mainDark,
+  },
+  chipPressed: {
+    opacity: 0.85,
   },
   icon: {
     flexShrink: 0,
   },
   label: {
-    color: colors.text,
+    color: colors.ink,
     fontSize: 15,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   labelSelected: {
-    color: "#fff",
+    color: colors.onMain,
     fontWeight: "700",
   },
 });

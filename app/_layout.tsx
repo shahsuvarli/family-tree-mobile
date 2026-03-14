@@ -11,6 +11,26 @@ import { StatusBar } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
+// Extracted outside RootLayout to prevent re-creation on every render
+function RootLayoutNav() {
+  return (
+    <SessionProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="#fff"
+          hidden={false}
+        />
+        <BottomSheetModalProvider>
+          <Slot />
+        </BottomSheetModalProvider>
+        {/* Toast is inside GestureHandlerRootView for correct z-index on Android */}
+        <Toast />
+      </GestureHandlerRootView>
+    </SessionProvider>
+  );
+}
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -27,22 +47,4 @@ export default function RootLayout() {
   }
 
   return <RootLayoutNav />;
-
-  function RootLayoutNav() {
-    return (
-      <SessionProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <StatusBar
-            barStyle="dark-content" // Customize to "light-content" if needed
-            backgroundColor="#fff" // Optional background color
-            hidden={false}
-          />
-          <BottomSheetModalProvider>
-            <Slot />
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-        <Toast />
-      </SessionProvider>
-    );
-  }
 }

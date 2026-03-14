@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase/client";
+import { updatePersonFavorite } from "@/features/people/services/peopleService";
+import { showErrorToast } from "@/lib/toast";
 import type {
   RelationshipSectionData,
   SelectedPersonSummary,
@@ -35,17 +36,30 @@ export const usePersonStore = create<PersonStore>((set, get) => ({
       return;
     }
 
+    const previousPerson = person;
+
+    // Optimistically update the UI
     const nextFavoriteValue = !person.is_favorite;
     set({ person: { ...person, is_favorite: nextFavoriteValue } });
 
-    const { error } = await supabase
-      .from("people")
-      .update({ is_favorite: nextFavoriteValue })
-      .eq("id", person.id);
+    try {
+      const { error } = await updatePersonFavorite(person.id, nextFavoriteValue);
 
-    if (error) {
-      console.error("Failed to update favorite person", error.message);
-      set({ person });
+      if (error) {
+        console.error("Failed to update favorite person", error.message);
+        set({ person: previousPerson });
+        showErrorToast(
+          "Favorite update failed",
+          "Could not update favorite. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Unexpected favorite update error", error);
+      set({ person: previousPerson });
+      showErrorToast(
+        "Favorite update failed",
+        "Something went wrong. Please try again."
+      );
     }
   },
 }));

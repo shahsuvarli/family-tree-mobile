@@ -2,7 +2,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "@/features/auth/providers/SessionProvider";
-import { supabase } from "@/lib/supabase/client";
+import { fetchProfileOverview as fetchProfileOverviewService } from "@/features/profile/services/profileService";
+import { colors } from "@/theme/colors";
 import { View, Text, StyleSheet, Image } from "react-native";
 
 interface HomeStatsOverview {
@@ -11,15 +12,15 @@ interface HomeStatsOverview {
 }
 
 const HomeStats = () => {
-  const { session } = useSession();
+  const { userId } = useSession();
   const isFocused = useIsFocused();
   const [overview, setOverview] = useState<HomeStatsOverview>({
     people_count: 0,
     relationship_count: 0,
   });
 
-  const fetchProfileOverview = useCallback(async () => {
-    if (!session) {
+  const loadProfileOverview = useCallback(async () => {
+    if (!userId) {
       setOverview({
         people_count: 0,
         relationship_count: 0,
@@ -27,11 +28,7 @@ const HomeStats = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("profile_overview")
-      .select("people_count, relationship_count")
-      .eq("id", session)
-      .single<HomeStatsOverview>();
+    const { data, error } = await fetchProfileOverviewService(userId);
 
     if (error) {
       console.error("Failed to load home stats", error.message);
@@ -42,13 +39,13 @@ const HomeStats = () => {
       people_count: data.people_count ?? 0,
       relationship_count: data.relationship_count ?? 0,
     });
-  }, [session]);
+  }, [userId]);
 
   useEffect(() => {
     if (isFocused) {
-      void fetchProfileOverview();
+      void loadProfileOverview();
     }
-  }, [fetchProfileOverview, isFocused]);
+  }, [loadProfileOverview, isFocused]);
 
   const statsCards = [
     {
@@ -69,15 +66,15 @@ const HomeStats = () => {
     <View style={styles.container}>
       {statsCards.map((item) => (
         <LinearGradient
-          colors={["#FF6100", "#fff"]}
-          start={{ x: 1, y: 0 }}
-          end={{ x: 1, y: 0 }}
+          colors={[colors.main, colors.mainGlow]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.card}
           key={item.id}
         >
           <Image
             source={item.image}
-            tintColor={"#fff"}
+            tintColor={colors.onMain}
             style={styles.cardImage}
           />
           <View style={styles.cardText}>
@@ -100,7 +97,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   card: {
-    backgroundColor: "#FF6600",
+    backgroundColor: colors.main,
     borderRadius: 20,
     flex: 1,
     padding: 12,
@@ -117,12 +114,12 @@ const styles = StyleSheet.create({
   },
   count: {
     fontSize: 15,
-    color: "#fff",
+    color: colors.onMain,
     fontWeight: "500",
   },
   recentText: {
     fontSize: 25,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.onMain,
   },
 });

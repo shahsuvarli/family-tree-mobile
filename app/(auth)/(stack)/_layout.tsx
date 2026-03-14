@@ -1,6 +1,6 @@
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { appRoutes } from "@/constants/routes";
 import { colors } from "@/theme/colors";
 import { usePersonStore } from "@/features/people/store/usePersonStore";
@@ -10,19 +10,49 @@ interface PersonRouteParams {
   name?: string;
 }
 
-interface FavoriteRouteParams {
-  id?: string;
-}
-
 export default function AuthStackLayout() {
   const { person, handleFavorite } = usePersonStore();
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={({ navigation }) => ({
+        headerShadowVisible: false,
+        headerStyle: {
+          backgroundColor: colors.canvas,
+        },
+        headerTitleStyle: {
+          color: colors.ink,
+          fontSize: 20,
+          fontWeight: "700",
+        },
+        headerLeft: () => (
+          <Pressable
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+                return;
+              }
+
+              router.replace(appRoutes.authTabsHome);
+            }}
+            style={({ pressed }) => [
+              styles.headerNavAction,
+              pressed && styles.headerActionPressed,
+            ]}
+          >
+            <Ionicons
+              name={navigation.canGoBack() ? "arrow-back" : "home-outline"}
+              size={20}
+              color={colors.mainDark}
+            />
+          </Pressable>
+        ),
+      })}
+    >
       <Stack.Screen
         name="search"
         options={{
-          title: "Search",
+          title: "My family",
           headerShown: true,
         }}
       />
@@ -39,18 +69,19 @@ export default function AuthStackLayout() {
             headerRight: () => {
               return (
                 <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 15,
-                  }}
+                  style={styles.headerActions}
                 >
-                  <Pressable onPress={handleFavorite}>
+                  <Pressable
+                    onPress={handleFavorite}
+                    style={({ pressed }) => [
+                      styles.headerIconAction,
+                      pressed && styles.headerActionPressed,
+                    ]}
+                  >
                     <FontAwesome
                       name={person.is_favorite ? "star" : "star-o"}
-                      size={30}
-                      color={colors.button}
+                      size={26}
+                      color={colors.mainDark}
                     />
                   </Pressable>
                   <Pressable
@@ -60,11 +91,15 @@ export default function AuthStackLayout() {
                         params: { person_id: personId },
                       })
                     }
+                    style={({ pressed }) => [
+                      styles.headerIconAction,
+                      pressed && styles.headerActionPressed,
+                    ]}
                   >
                     <FontAwesome
                       name="pencil-square-o"
-                      size={27}
-                      color={colors.button}
+                      size={24}
+                      color={colors.mainDark}
                     />
                   </Pressable>
                 </View>
@@ -83,28 +118,10 @@ export default function AuthStackLayout() {
       />
       <Stack.Screen
         name="favorite"
-        options={({ route }: { route: { params?: FavoriteRouteParams } }) => ({
+        options={{
           headerShown: true,
           title: "Favorites",
-          headerRight: () => {
-            return (
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: appRoutes.authTabsHomeEditPerson,
-                    params: { person_id: route.params?.id },
-                  })
-                }
-              >
-                <FontAwesome
-                  name="pencil-square-o"
-                  size={25}
-                  color={colors.button}
-                />
-              </Pressable>
-            );
-          },
-        })}
+        }}
       />
 
       <Stack.Screen
@@ -125,7 +142,8 @@ export default function AuthStackLayout() {
       <Stack.Screen
         name="add-new"
         options={{
-          headerShown: false,
+          title: "Add person",
+          headerShown: true,
           presentation: "modal",
           animation: "slide_from_bottom",
         }}
@@ -133,3 +151,32 @@ export default function AuthStackLayout() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  headerNavAction: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderWarm,
+  },
+  headerIconAction: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerActions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+  },
+  headerActionPressed: {
+    opacity: 0.82,
+  },
+});

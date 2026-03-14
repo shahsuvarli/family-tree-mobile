@@ -12,6 +12,7 @@ describe("person form helpers", () => {
       name: "",
       surname: "",
       birthDate: "09 Mar 2026",
+      birthDateUnknown: false,
       gender: 1,
       maritalStatus: 1,
       life: 1,
@@ -24,6 +25,7 @@ describe("person form helpers", () => {
       name: "  Ada  ",
       surname: "  Lovelace ",
       birthDate: "10 Dec 1815",
+      birthDateUnknown: false,
       gender: 2,
       maritalStatus: 2,
       life: 2,
@@ -48,6 +50,7 @@ describe("person form helpers", () => {
       name: "Grace",
       surname: "Hopper",
       birthDate: "",
+      birthDateUnknown: false,
       gender: 1,
       maritalStatus: 1,
       life: 1,
@@ -63,6 +66,32 @@ describe("person form helpers", () => {
       marital_status: 1,
       notes: "",
       profile_id: null,
+    });
+  });
+
+  it("clears the payload date when DOB is marked as unknown", () => {
+    const values: PersonFormValues = {
+      name: "Katherine",
+      surname: "Johnson",
+      birthDate: "",
+      birthDateUnknown: true,
+      gender: 2,
+      maritalStatus: 1,
+      life: 2,
+      notes: "",
+    };
+
+    expect(
+      buildPersonPayload(values, new Date(1918, 7, 26), "profile-123")
+    ).toEqual({
+      name: "Katherine",
+      surname: "Johnson",
+      birth_date: null,
+      gender: 2,
+      life: 2,
+      marital_status: 1,
+      notes: "",
+      profile_id: "profile-123",
     });
   });
 });
